@@ -1,6 +1,4 @@
-package org.example
-
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,36 +16,34 @@ package org.example
  * limitations under the License.
  */
 
+package org.myorg.quickstart
+
 import org.apache.flink.api.scala._
 
 /**
- * Skeleton for a Flink Job.
+ * Skeleton for a Flink Batch Job.
  *
- * For a full example of a Flink Job, see the WordCountJob.scala file in the
- * same package/directory or have a look at the website.
+ * For a tutorial how to write a Flink batch application, check the
+ * tutorials and examples on the <a href="http://flink.apache.org/docs/stable/">Flink Website</a>.
  *
- * You can also generate a .jar file that you can submit on your Flink
- * cluster. Just type
- * {{{
- *   sbt clean assembly
- * }}}
- * in the projects root directory. You will find the jar in
- * target/scala-2.11/Flink\ Project-assembly-0.1-SNAPSHOT.jar
- *
+ * To package your application into a JAR file for execution,
+ * change the main class in the POM.xml file to this class (simply search for 'mainClass')
+ * and run 'mvn clean package' on the command line.
  */
-object Job {
+object BatchJob {
+
   def main(args: Array[String]) {
-    // set up the execution environment
+    // set up the batch execution environment
     val env = ExecutionEnvironment.getExecutionEnvironment
 
-    /**
+    /*
      * Here, you can start creating your execution plan for Flink.
      *
      * Start with getting some data from the environment, like
-     * env.readTextFile(textPath);
+     *  env.readTextFile(textPath);
      *
      * then, transform the resulting DataSet[String] using operations
-     * like:
+     * like
      *   .filter()
      *   .flatMap()
      *   .join()
@@ -56,16 +52,15 @@ object Job {
      * and many more.
      * Have a look at the programming guide:
      *
-     * http://flink.apache.org/docs/latest/programming_guide.html
+     * http://flink.apache.org/docs/latest/apis/batch/index.html
      *
      * and the examples
      *
-     * http://flink.apache.org/docs/latest/examples.html
+     * http://flink.apache.org/docs/latest/apis/batch/examples.html
      *
      */
 
-
     // execute program
-    env.execute("Flink Scala API Skeleton")
+    env.execute("Flink Batch Scala API Skeleton")
   }
 }
