@@ -13,6 +13,7 @@ class RulesPredictor extends CheckpointedFunction with FlatMapFunction[String, D
   private var rulesState: ListState[String] = _
 
   private var rules: ListBuffer[String] = ListBuffer[String]()
+  private var i: Int = 0
 
   override def snapshotState(functionSnapshotContext: FunctionSnapshotContext): Unit = {
     rulesState.clear()
@@ -38,10 +39,11 @@ class RulesPredictor extends CheckpointedFunction with FlatMapFunction[String, D
   }
 
   override def flatMap(t: String, collector: Collector[Double]): Unit = {
-    println("getting predictions and updating")
-    val res = (1 to 10000).map(x => x*x).distinct
+    println("getting predictions and updating " + i)
+    val res = (1 to 1000).map(x => x*x).distinct
     collector.collect(1.0) // predictions
     rules += "s" // update
+    i += 1
   }
 
 }
