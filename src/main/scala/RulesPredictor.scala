@@ -40,7 +40,7 @@ class RulesPredictor extends CheckpointedFunction with FlatMapFunction[String, D
 
   override def flatMap(t: String, collector: Collector[Double]): Unit = {
     println("getting predictions and updating " + i)
-    val res = (1 to 1000).map(x => x*x).distinct
+    val res = (1 to 1000).map(x => x * x).distinct
     collector.collect(1.0) // predictions
     rules += "s" // update
     i += 1
