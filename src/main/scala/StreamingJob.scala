@@ -1,6 +1,8 @@
 import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
 
+import org.apache.commons.math3.distribution.NormalDistribution
+
 import scala.collection.mutable.ArrayBuffer
 
 object StreamingJob {
@@ -8,11 +10,9 @@ object StreamingJob {
   def main(args: Array[String]) {
     println("Starting")
 
-    var x = ArrayBuffer(1,2,3)
-    var xx = x(0)
-    xx = 666
-    x(0) = xx
-    println(x)
+    val p1 = new NormalDistribution(0, 1).cumulativeProbability(0)
+    val p2 = new NormalDistribution(5, 1).cumulativeProbability(5)
+    println(p1, p2)
 
 //    val env = StreamExecutionEnvironment.getExecutionEnvironment
 //    //env.enableCheckpointing(1000)
