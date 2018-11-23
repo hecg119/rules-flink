@@ -5,8 +5,8 @@ class AMRules() {
   val attrNum: Int = 10
   val clsNum: Int = 10
 
-  var rules: ArrayBuffer[Rule] = ArrayBuffer(Rule(ArrayBuffer()))
-  var rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(RuleStatistics(0, ArrayBuffer.fill(clsNum)(0)))
+  var rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
+  var rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
 
   val EXT_MIN: Int = 100
   val DELTA: Double = 1 - 0.95
@@ -17,7 +17,7 @@ class AMRules() {
 
     for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
       if (isCovered(instance, rule)) {
-        updateStatistics(ruleId, instance.classLbl) // dist
+        updateStatistics(ruleId, instance) // dist
         covered = true
 
         if (rulesStats(ruleId).count > EXT_MIN) {
@@ -27,12 +27,12 @@ class AMRules() {
     }
 
     if (!covered) {
-      updateStatistics(0, instance.classLbl)
+      updateStatistics(0, instance)
 
       if (rulesStats(0).count > EXT_MIN) {
         expandRule(0)
         rules.append(rules(0).copy())
-        rules(0) = Rule(ArrayBuffer()) // todo: clearing?
+        rules(0) = new Rule() // todo: clearing?
       }
     }
   }
@@ -46,11 +46,30 @@ class AMRules() {
     true
   }
 
-  def updateStatistics(ruleId: Int, classLbl: Int): Unit = {
-    rulesStats.update(ruleId, RuleStatistics(
-      rulesStats(ruleId).count + 1,
-      rulesStats(ruleId).clsCount.updated(classLbl, rulesStats(ruleId).clsCount(classLbl) + 1) // todo: count, min, max, for each class: mean, var, p(c); use NormalDistribution()
-    ))
+  def updateStatistics(ruleId: Int, instance: Instance): Unit = {
+    val ruleStats = rulesStats(ruleId)
+    val classAttributesMetrics = ruleStats.classesAttributesMetrics(instance.classLbl)
+
+    ruleStats.count = ruleStats.count + 1
+    classAttributesMetrics.count = classAttributesMetrics.count + 1
+
+    for ((attVal, i) <- instance.attributes.zipWithIndex) {
+      val classAttributeMetrics = classAttributesMetrics.attributesMetrics(i)
+
+      classAttributeMetrics.count = classAttributeMetrics.count + 1
+
+      val lastMean = classAttributeMetrics.mean
+      val lastStd = classAttributeMetrics.std
+      val count = classAttributeMetrics.count
+
+      classAttributeMetrics.mean = classAttributeMetrics.mean + ((lastMean - attVal) / classAttributeMetrics.count)
+      classAttributeMetrics.std = ((count - 2) / (count - 1)) * math.pow(lastStd, 2) + (1 / count) * math.pow(attVal - lastMean, 2)
+
+      classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics
+    }
+
+    ruleStats.classesAttributesMetrics(instance.classLbl) = classAttributesMetrics
+    rulesStats(ruleId) = ruleStats
   }
 
   def expandRule(ruleId: Int): Unit = {
@@ -83,7 +102,7 @@ class AMRules() {
   }
 
   def releaseStatistics(ruleId: Int): Unit = {
-    rulesStats.update(ruleId, RuleStatistics(0, ArrayBuffer.fill(clsNum)(0))) // todo: ok?
+    rulesStats(ruleId) = new RuleStatistics(clsNum, attrNum) // todo: ok?
   }
 
   def predict(): Double = {
@@ -97,7 +116,18 @@ class AMRules() {
   }
 
   case class Condition(attributeIdx: Int, relation: String, value: Double)
-  case class Rule(conditions: ArrayBuffer[Condition])
-  case class RuleStatistics(count: Int, clsCount: ArrayBuffer[Int])
+  case class Rule(conditions: ArrayBuffer[Condition]) {
+    def this() = this(ArrayBuffer())
+  }
+  case class RuleStatistics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: ArrayBuffer[ClassAttributesMetrics], var count: Int) {
+    def this(attrNum: Int, clsNum: Int) = this(
+      attrNum,
+      clsNum,
+      ArrayBuffer.fill(clsNum)(ClassAttributesMetrics(ArrayBuffer.fill(attrNum)(AttributeMetrics(0, 0, 0)), 0)),
+      0
+    )
+  }
+  case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
+  case class AttributeMetrics(var mean: Double, var std: Double, var count: Int)
   case class Instance(attributes: ArrayBuffer[Double], classLbl: Int)
 }
