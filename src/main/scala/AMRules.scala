@@ -82,7 +82,7 @@ class AMRules() {
   }
 
   def expandRule(ruleId: Int): Unit = {
-    val ruleEntropy = 44
+    val ruleEntropy = entropy(rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count.toDouble).toList)
     val bound = calcHoeffdingBound(rulesStats(ruleId).count)
 
     var bestSplit: (Condition, Double) = (Condition(-1, "", -1), 1.0)
@@ -104,6 +104,10 @@ class AMRules() {
     }
   }
 
+  def entropy(ps: List[Double]): Double = {
+    ps.map(p => -p * math.log10(p) / math.log10(2.0)).sum
+  }
+
   def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
 
   def findBestSplit(ruleId: Int, attIdx: Int): (Condition, Double) = {
@@ -116,14 +120,12 @@ class AMRules() {
     var splitVal = min + step
 
     while (splitVal < max) {
-      var splitEntropy = 0.0
-
-      (0 to clsNum).foreach((clsIdx) => {
+      val splitEntropy = entropy((0 to clsNum).map((clsIdx) => {
         val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
         val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std
         val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
-        splitEntropy = splitEntropy - p * math.log10(p)/math.log10(2.0)
-      })
+        - p * math.log10(p)/math.log10(2.0)
+      }).toList)
 
       if (splitEntropy < minEntropySplit._1) minEntropySplit = (splitEntropy, splitVal)
 
