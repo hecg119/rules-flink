@@ -4,16 +4,16 @@ import scala.collection.mutable.ArrayBuffer
 
 class AMRules() {
 
-  val attrNum: Int = 10
-  val clsNum: Int = 10
+  private val attrNum: Int = 10
+  private val clsNum: Int = 10
 
-  var rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
-  var rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
+  private var rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
+  private var rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
 
-  val EXT_MIN: Int = 100
-  val DELTA: Double = 1 - 0.95
-  val R: Double = 1.0
-  val SPLIT_GRAN: Double = 0.2
+  private val EXT_MIN: Int = 100
+  private val DELTA: Double = 1 - 0.95
+  private val R: Double = 1.0
+  private val SPLIT_GRAN: Double = 0.2
 
   def update(instance: Instance): Unit = {
     var covered = false
@@ -39,10 +39,10 @@ class AMRules() {
       }
     }
 
-    // todo: maintain error for each rule, remove rules if error > threshold
+    // todo: remove rules if error > threshold
   }
 
-  def isCovered(instance: Instance, rule: Rule): Boolean = {
+  private def isCovered(instance: Instance, rule: Rule): Boolean = {
     for (c <- rule.conditions) {
       if (!conditionResolver(instance.attributes(c.attributeIdx), c.relation, c.value)) {
         return false
@@ -51,7 +51,7 @@ class AMRules() {
     true
   }
 
-  def updateStatistics(ruleId: Int, instance: Instance): Unit = {
+  private def updateStatistics(ruleId: Int, instance: Instance): Unit = {
     val ruleStats = rulesStats(ruleId)
     val classAttributesMetrics = ruleStats.classesAttributesMetrics(instance.classLbl)
 
@@ -78,10 +78,10 @@ class AMRules() {
     }
 
     ruleStats.classesAttributesMetrics(instance.classLbl) = classAttributesMetrics
-    rulesStats(ruleId) = ruleStats
+    rulesStats(ruleId) = ruleStats // todo: update error
   }
 
-  def expandRule(ruleId: Int): Unit = {
+  private def expandRule(ruleId: Int): Unit = {
     val ruleEntropy = entropy(rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count.toDouble).toList)
     val bound = calcHoeffdingBound(rulesStats(ruleId).count)
 
@@ -104,13 +104,13 @@ class AMRules() {
     }
   }
 
-  def entropy(ps: List[Double]): Double = {
+  private def entropy(ps: List[Double]): Double = {
     ps.map(p => -p * math.log10(p) / math.log10(2.0)).sum
   }
 
-  def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
+  private def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
 
-  def findBestSplit(ruleId: Int, attIdx: Int): (Condition, Double) = {
+  private def findBestSplit(ruleId: Int, attIdx: Int): (Condition, Double) = {
     val classesAttributeMetrics = rulesStats(ruleId).classesAttributesMetrics
     val min = rulesStats(ruleId).attributesClassesMetrics(attIdx).min
     val max = rulesStats(ruleId).attributesClassesMetrics(attIdx).max
@@ -135,7 +135,7 @@ class AMRules() {
     (Condition(attIdx, ">", minEntropySplit._2), minEntropySplit._1)
   }
 
-  def releaseStatistics(ruleId: Int): Unit = {
+  private def releaseStatistics(ruleId: Int): Unit = {
     rulesStats(ruleId) = new RuleStatistics(clsNum, attrNum) // todo: ok?
   }
 
@@ -152,12 +152,12 @@ class AMRules() {
     votes.indices.maxBy(votes)
   }
 
-  def classifyInstance(ruleId: Int, instance: Instance): Int = {
+  private def classifyInstance(ruleId: Int, instance: Instance): Int = {
     val metrics = rulesStats(ruleId).classesAttributesMetrics
     metrics.indices.maxBy(metrics)
   }
 
-  def conditionResolver(instanceAtt: Double, relation: String, ruleVal: Double): Boolean = relation match {
+  private def conditionResolver(instanceAtt: Double, relation: String, ruleVal: Double): Boolean = relation match {
     case ">" => instanceAtt > ruleVal
     case "=" => instanceAtt == ruleVal
     case "<=" => instanceAtt < ruleVal
@@ -184,4 +184,4 @@ case class RuleStatistics(attrNum: Int, clsNum: Int, var classesAttributesMetric
 case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
 case class AttributeMetrics(var mean: Double, var std: Double, var count: Int)
 case class AttributeClassesMetrics(var min: Double, var max: Double)
-case class Instance(attributes: ArrayBuffer[Double], classLbl: Int)
+case class Instance(attributes: Array[Double], classLbl: Int)
