@@ -1,8 +1,10 @@
-import org.apache.flink.api.common.functions.{FlatMapFunction, MapFunction}
-import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
+package model
+
+import input.Instance
+import org.apache.flink.api.common.functions.MapFunction
+import org.apache.flink.api.common.state.ListState
 import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
-import org.apache.flink.util.Collector
 
 
 class RulesPredictor extends CheckpointedFunction with MapFunction[Instance, (Int, Int)] {

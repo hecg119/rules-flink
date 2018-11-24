@@ -1,3 +1,5 @@
+package input
+
 import org.apache.flink.api.common.functions.MapFunction
 
 class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Instance] {
@@ -13,3 +15,5 @@ class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Ins
   }
 
 }
+
+case class Instance(attributes: Array[Double], classLbl: Double)

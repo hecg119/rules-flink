@@ -1,3 +1,6 @@
+package model
+
+import input.Instance
 import org.apache.commons.math3.distribution.NormalDistribution
 
 import scala.collection.mutable.ArrayBuffer
@@ -185,4 +188,3 @@ case class RuleStatistics(attrNum: Int, clsNum: Int, var classesAttributesMetric
 case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
 case class AttributeMetrics(var mean: Double, var std: Double, var count: Int)
 case class AttributeClassesMetrics(var min: Double, var max: Double)
-case class Instance(attributes: Array[Double], classLbl: Double)

@@ -1,8 +1,11 @@
 import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
 
+import eval.Evaluator
+import input.{InputConverter, StreamHeader}
+import model.RulesPredictor
 
-object StreamingJob {
+object SingleClassifierJob {
 
   def main(args: Array[String]) {
     println("Starting")

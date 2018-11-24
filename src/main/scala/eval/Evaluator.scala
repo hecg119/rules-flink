@@ -1,5 +1,6 @@
-import org.apache.flink.api.common.functions.{FlatMapFunction, MapFunction}
-import org.apache.flink.util.Collector
+package eval
+
+import org.apache.flink.api.common.functions.MapFunction
 
 class Evaluator extends MapFunction[(Int, Int), Int]{
 
