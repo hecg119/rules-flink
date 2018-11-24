@@ -1,14 +1,14 @@
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
-class StreamHeader(path: String) {
+class StreamHeader(path: String) extends Serializable {
 
-  private var columnsFormat: Array[AttributeFormat] = Array()
+  private var columnsFormat: Array[ColumnFormat] = Array()
 
   def parse(): StreamHeader = {
     val lines = Source.fromFile(path).getLines
     var done = false
-    val formats: ArrayBuffer[AttributeFormat] = ArrayBuffer()
+    val formats: ArrayBuffer[ColumnFormat] = ArrayBuffer()
 
     while (lines.hasNext && !done) {
       val line = lines.next()
@@ -17,7 +17,7 @@ class StreamHeader(path: String) {
         val c = line.split(" ").drop(1)
 
         if (c(1) == "numeric") {
-          formats += AttributeFormat(c(0), numeric=true, Map())
+          formats += ColumnFormat(c(0), numeric=true, Map())
         }
         else if (c(1).startsWith("{")) {
           val values = c(1).replace("{", "").replace("}", "").split(",")
@@ -27,7 +27,7 @@ class StreamHeader(path: String) {
             mapper.put(v, i)
           }
 
-          formats += AttributeFormat(c(0), numeric=false, mapper.toMap)
+          formats += ColumnFormat(c(0), numeric=false, mapper.toMap)
         } else {
           throw new Error("Wrong row format! Aborting the job.")
         }
@@ -39,8 +39,8 @@ class StreamHeader(path: String) {
     this
   }
 
-  def attribute(idx: Int, value: String): Double = {
-    columnsFormat(idx).mapper(value)
+  def column(idx: Int, value: String): Double = {
+    if (columnsFormat(idx).numeric) value.toDouble else columnsFormat(idx).mapper(value)
   }
 
   def print(): Unit = {
@@ -52,4 +52,4 @@ class StreamHeader(path: String) {
 
 }
 
-case class AttributeFormat(name: String, numeric: Boolean, mapper: Map[String, Double])
+case class ColumnFormat(name: String, numeric: Boolean, mapper: Map[String, Double])

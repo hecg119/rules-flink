@@ -53,7 +53,7 @@ class AMRules() extends Serializable {
 
   private def updateStatistics(ruleId: Int, instance: Instance): Unit = {
     val ruleStats = rulesStats(ruleId)
-    val classAttributesMetrics = ruleStats.classesAttributesMetrics(instance.classLbl)
+    val classAttributesMetrics = ruleStats.classesAttributesMetrics(instance.classLbl.toInt)
 
     ruleStats.count = ruleStats.count + 1
     classAttributesMetrics.count = classAttributesMetrics.count + 1
@@ -77,7 +77,7 @@ class AMRules() extends Serializable {
       classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics // todo: use windowed stats
     }
 
-    ruleStats.classesAttributesMetrics(instance.classLbl) = classAttributesMetrics
+    ruleStats.classesAttributesMetrics(instance.classLbl.toInt) = classAttributesMetrics
     rulesStats(ruleId) = ruleStats // todo: update error
   }
 
@@ -139,7 +139,7 @@ class AMRules() extends Serializable {
     rulesStats(ruleId) = new RuleStatistics(clsNum, attrNum) // todo: ok?
   }
 
-  def predict(instance: Instance): Int = {
+  def predict(instance: Instance): Double = {
     val votes = ArrayBuffer.fill(clsNum)(0)
 
     for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
@@ -185,4 +185,4 @@ case class RuleStatistics(attrNum: Int, clsNum: Int, var classesAttributesMetric
 case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
 case class AttributeMetrics(var mean: Double, var std: Double, var count: Int)
 case class AttributeClassesMetrics(var min: Double, var max: Double)
-case class Instance(attributes: Array[Double], classLbl: Int)
+case class Instance(attributes: Array[Double], classLbl: Double)

@@ -4,8 +4,12 @@ class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Ins
 
   override def map(rawInput: String): Instance = {
     val columns = rawInput.split(",")
-    val features = columns.dropRight(1).map(col => col.toDouble)
-    Instance(features, if (columns.last == "UP") 1 else 0)
+
+    val convertedColumns = columns
+      .zipWithIndex
+      .map({ case (c: String, idx: Int) => streamHeader.column(idx, c) })
+
+    Instance(convertedColumns.dropRight(1), convertedColumns.last)
   }
 
 }
