@@ -124,7 +124,7 @@ class AMRules() {
         val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
         val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std
         val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
-        - p * math.log10(p)/math.log10(2.0)
+        - p * math.log10(p) / math.log10(2.0)
       }).toList)
 
       if (splitEntropy < minEntropySplit._1) minEntropySplit = (splitEntropy, splitVal)
@@ -139,8 +139,22 @@ class AMRules() {
     rulesStats(ruleId) = new RuleStatistics(clsNum, attrNum) // todo: ok?
   }
 
-  def predict(): Double = {
-    0.0 // dist
+  def predict(instance: Instance): Int = {
+    val votes = ArrayBuffer.fill(clsNum)(0)
+
+    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
+      if (isCovered(instance, rule)) {
+        val clsIdx = classifyInstance(ruleId, instance)
+        votes(clsIdx) = votes(clsIdx) + 1
+      }
+    }
+
+    votes.indices.maxBy(votes)
+  }
+
+  def classifyInstance(ruleId: Int, instance: Instance): Int = {
+    val metrics = rulesStats(ruleId).classesAttributesMetrics
+    metrics.indices.maxBy(metrics)
   }
 
   def conditionResolver(instanceAtt: Double, relation: String, ruleVal: Double): Boolean = relation match {
