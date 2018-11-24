@@ -2,13 +2,13 @@ import org.apache.commons.math3.distribution.NormalDistribution
 
 import scala.collection.mutable.ArrayBuffer
 
-class AMRules() {
+class AMRules() extends Serializable {
 
   private val attrNum: Int = 10
   private val clsNum: Int = 10
 
-  private var rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
-  private var rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
+  private val rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
+  private val rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
 
   private val EXT_MIN: Int = 100
   private val DELTA: Double = 1 - 0.95
@@ -58,7 +58,7 @@ class AMRules() {
     ruleStats.count = ruleStats.count + 1
     classAttributesMetrics.count = classAttributesMetrics.count + 1
 
-    for ((attVal, i) <- instance.attributes.zipWithIndex) { // dist?
+    for ((attVal, i) <- instance.attributes.zipWithIndex) { // dist? + todo: distinguish numeric/nominal
       val attributeClassesMetrics = ruleStats.attributesClassesMetrics(i) // todo: get m - 3std / m + 3std instead
       if (attVal > attributeClassesMetrics.max) attributeClassesMetrics.max = attVal
       if (attVal < attributeClassesMetrics.min) attributeClassesMetrics.min = attVal
@@ -110,7 +110,7 @@ class AMRules() {
 
   private def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
 
-  private def findBestSplit(ruleId: Int, attIdx: Int): (Condition, Double) = {
+  private def findBestSplit(ruleId: Int, attIdx: Int): (Condition, Double) = { // todo: distinguish numeric/nominal
     val classesAttributeMetrics = rulesStats(ruleId).classesAttributesMetrics
     val min = rulesStats(ruleId).attributesClassesMetrics(attIdx).min
     val max = rulesStats(ruleId).attributesClassesMetrics(attIdx).max
@@ -153,7 +153,7 @@ class AMRules() {
   }
 
   private def classifyInstance(ruleId: Int, instance: Instance): Int = {
-    val metrics = rulesStats(ruleId).classesAttributesMetrics
+    val metrics = rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count)
     metrics.indices.maxBy(metrics)
   }
 
@@ -162,6 +162,7 @@ class AMRules() {
     case "=" => instanceAtt == ruleVal
     case "<=" => instanceAtt < ruleVal
   }
+
 }
 
 case class Rule(conditions: ArrayBuffer[Condition]) {
