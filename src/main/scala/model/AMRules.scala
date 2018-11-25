@@ -95,10 +95,10 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     val ruleEntropy = entropy(rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count.toDouble / rulesStats(ruleId).count).toList)
     val bound = calcHoeffdingBound(rulesStats(ruleId).count)
 
-    var bestSplit: (Condition, Double) = (Condition(-1, "", -1), 1.0)
+    var bestSplit: (Condition, Double) = (Condition(-1, "", -1), Double.MaxValue)
 
     if (ruleEntropy > bound) {
-      (0 until attrNum).foreach(attrIdx => { // dist
+      (0 until attrNum).foreach(attrIdx => { // dist?
         val attrBestSplit = findBestSplit(ruleId, attrIdx) // dist?
 
         if (attrBestSplit._2 < bestSplit._2) {
@@ -108,9 +108,8 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
 
       if (ruleEntropy - bestSplit._2 > bound) {
         rules(ruleId).conditions.append(bestSplit._1)
+        releaseStatistics(ruleId) // todo: really? then this rule classifies at random
       }
-
-      releaseStatistics(ruleId) // todo: really? then this rule classifies at random
     }
   }
 
@@ -134,10 +133,10 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     var splitVal = min + step
 
     while (splitVal < max) {
-      var spl = Double.MinPositiveValue
-      var spr = Double.MinPositiveValue
       val psl: ArrayBuffer[Double] = ArrayBuffer()
       val psr: ArrayBuffer[Double] = ArrayBuffer()
+      var spl = Double.MinPositiveValue
+      var spr = Double.MinPositiveValue
 
       (0 until clsNum).foreach((clsIdx) => {
         val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
@@ -164,8 +163,8 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   def predict(instance: Instance): Double = {
     val votes = ArrayBuffer.fill(clsNum)(0)
 
-    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
-      if (isCovered(instance, rule)) {
+    for ((rule, ruleId) <- rules.zipWithIndex) {
+      if (ruleId > 0 && isCovered(instance, rule)) {
         val clsIdx = classifyInstance(ruleId, instance)
         votes(clsIdx) = votes(clsIdx) + 1
       }
@@ -186,7 +185,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   }
 
   def print(): Unit = {
-    println("\nCurrent AMRules:")
+    println(s"\nCurrent AMRules [${rules.length - 1}]:")
 
     for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
       var cstr: ArrayBuffer[String] = ArrayBuffer()

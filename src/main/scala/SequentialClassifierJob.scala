@@ -11,7 +11,7 @@ object SequentialClassifierJob {
   def main(args: Array[String]) {
     println("Starting")
     val numPartitions = 8
-    val arffPath = "data\\ELEC.arff"
+    val arffPath = "data\\COVERTYPE.arff"
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -23,7 +23,7 @@ object SequentialClassifierJob {
     val predictionsStream = instancesStream.map(new Predictor(streamHeader))
     val resultsStream = predictionsStream.map(new Evaluator())
 
-    resultsStream.countWindowAll(1000, 1).sum(0).print()
+    resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()
 
 //    val partialPredictions = instancesStream
 //      .flatMap(new ReplicateInstance(numPartitions))
