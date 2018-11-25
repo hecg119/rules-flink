@@ -18,7 +18,7 @@ class Predictor(streamHeader: StreamHeader) extends CheckpointedFunction with Ma
   override def initializeState(context: FunctionInitializationContext): Unit = {}
 
   override def map(instance: Instance): (Double, Double) = {
-    rulesModel.print()
+    //rulesModel.print()
     rulesModel.update(instance)
     (instance.classLbl, rulesModel.predict(instance))
   }

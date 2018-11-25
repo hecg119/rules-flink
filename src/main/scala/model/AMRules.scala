@@ -13,7 +13,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   private val rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
   private val rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
 
-  private val EXT_MIN: Int = 100
+  private val EXT_MIN: Int = 1000
   private val DELTA: Double = 1 - 0.95
   private val R: Double = 1.0
   private val SPLIT_GRAN: Double = 0.2
@@ -22,7 +22,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     var covered = false
 
     for ((rule, ruleId) <- rules.zipWithIndex) { // dist
-      if (isCovered(instance, rule)) {
+      if (ruleId > 0 && isCovered(instance, rule)) {
         updateStatistics(ruleId, instance)
         covered = true
 
@@ -38,7 +38,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
       if (rulesStats(0).count > EXT_MIN) {
         expandRule(0)
         rules.append(rules(0).copy())
-        rulesStats.append(new RuleStatistics(attrNum, clsNum))
+        rulesStats.append(rulesStats(0).copy())
         rules(0) = new Rule()
         rulesStats(0) = new RuleStatistics(attrNum, clsNum)
       }
@@ -66,20 +66,19 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
 
     for ((attVal, i) <- instance.attributes.zipWithIndex) { // dist? + todo: distinguish numeric/nominal
       val attributeClassesMetrics = ruleStats.attributesClassesMetrics(i)
-      if (attVal > attributeClassesMetrics.max) attributeClassesMetrics.max = attVal // todo: get m - 3std / m + 3std instead
+      if (attVal > attributeClassesMetrics.max) attributeClassesMetrics.max = attVal // todo: get m - 3std / m + 3std instead, against outliers
       if (attVal < attributeClassesMetrics.min) attributeClassesMetrics.min = attVal
       ruleStats.attributesClassesMetrics(i) = attributeClassesMetrics
 
       val classAttributeMetrics = classAttributesMetrics.attributesMetrics(i)
-      classAttributeMetrics.count = classAttributeMetrics.count + 1
 
-      if (classAttributeMetrics.count < 2) {
+      if (classAttributesMetrics.count < 2) {
         classAttributeMetrics.mean = attVal
         classAttributeMetrics.std = 0
       } else {
         val lastMean = classAttributeMetrics.mean
         val lastStd = classAttributeMetrics.std
-        val count = classAttributeMetrics.count
+        val count = classAttributesMetrics.count // todo: check
 
         classAttributeMetrics.mean = classAttributeMetrics.mean + ((attVal - lastMean) / count)
         classAttributeMetrics.std = ((count - 2.0) / (count - 1.0)) * math.pow(lastStd, 2) + (1.0 / count) * math.pow(attVal - lastMean, 2)
@@ -99,8 +98,8 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     var bestSplit: (Condition, Double) = (Condition(-1, "", -1), 1.0)
 
     if (ruleEntropy > bound) {
-      (0 until attrNum).foreach(attIdx => { // dist
-        val attrBestSplit = findBestSplit(ruleId, attIdx) // dist?
+      (0 until attrNum).foreach(attrIdx => { // dist
+        val attrBestSplit = findBestSplit(ruleId, attrIdx) // dist?
 
         if (attrBestSplit._2 < bestSplit._2) {
           bestSplit = attrBestSplit
@@ -111,7 +110,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
         rules(ruleId).conditions.append(bestSplit._1)
       }
 
-      releaseStatistics(ruleId)
+      releaseStatistics(ruleId) // todo: really? then this rule classifies at random
     }
   }
 
@@ -120,7 +119,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   }
 
   private def entropy(ps: List[Double]): Double = {
-    ps.map(p => -p * math.log10(p) / math.log10(2.0)).sum
+    ps.map(p => if (p == 0) 0 else -p * math.log10(p) / math.log10(2.0)).sum
   }
 
   private def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
@@ -135,19 +134,31 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     var splitVal = min + step
 
     while (splitVal < max) {
-      val splitEntropy = entropy((0 until clsNum).map((clsIdx) => {
+      var spl = Double.MinPositiveValue
+      var spr = Double.MinPositiveValue
+      val psl: ArrayBuffer[Double] = ArrayBuffer()
+      val psr: ArrayBuffer[Double] = ArrayBuffer()
+
+      (0 until clsNum).foreach((clsIdx) => {
         val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
         val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std + Double.MinPositiveValue
         val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
-        - p * math.log10(p) / math.log10(2.0) // todo: what about the right side
-      }).toList)
+        val cp = classesAttributeMetrics(clsIdx).count.toDouble / rulesStats(ruleId).count
+
+        psl += p * cp
+        spl = spl + p * cp
+        psr += (1 - p) * cp
+        spr = spr + (1 - p) * cp
+      })
+
+      val splitEntropy = entropy(psl.map(p => p / spl).toList) + entropy(psr.map(p => p / spr).toList)
 
       if (splitEntropy < minEntropySplit._1) minEntropySplit = (splitEntropy, splitVal)
 
       splitVal = splitVal + step
     }
 
-    (Condition(attIdx, "<=", minEntropySplit._2), minEntropySplit._1)
+    (Condition(attIdx, "<=", minEntropySplit._2), minEntropySplit._1) // todo: pick best operator based on the number of samples (wight left/right)
   }
 
   def predict(instance: Instance): Double = {
@@ -202,12 +213,12 @@ case class RuleStatistics(attrNum: Int, clsNum: Int, var classesAttributesMetric
   def this(attrNum: Int, clsNum: Int) = this(
     attrNum,
     clsNum,
-    ArrayBuffer.fill(clsNum)(ClassAttributesMetrics(ArrayBuffer.fill(attrNum)(AttributeMetrics(0, 0, 0)), 0)),
+    ArrayBuffer.fill(clsNum)(ClassAttributesMetrics(ArrayBuffer.fill(attrNum)(AttributeMetrics(0, 0)), 0)),
     ArrayBuffer.fill(attrNum)(AttributeClassesMetrics(Double.MaxValue, Double.MinValue)),
     0
   )
 }
 
 case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
-case class AttributeMetrics(var mean: Double, var std: Double, var count: Int)
+case class AttributeMetrics(var mean: Double, var std: Double)
 case class AttributeClassesMetrics(var min: Double, var max: Double)

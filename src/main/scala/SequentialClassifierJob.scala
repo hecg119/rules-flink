@@ -23,7 +23,7 @@ object SequentialClassifierJob {
     val predictionsStream = instancesStream.map(new Predictor(streamHeader))
     val resultsStream = predictionsStream.map(new Evaluator())
 
-    //resultsStream.countWindowAll(1000, 1).sum(0).print()
+    resultsStream.countWindowAll(1000, 1).sum(0).print()
 
 //    val partialPredictions = instancesStream
 //      .flatMap(new ReplicateInstance(numPartitions))
