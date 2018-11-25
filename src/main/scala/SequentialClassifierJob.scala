@@ -20,8 +20,8 @@ object SequentialClassifierJob {
 
     val rawInputStream = env.readTextFile(arffPath).filter(line => !line.startsWith("@") && !line.isEmpty)
     val instancesStream = rawInputStream.map(new InputConverter(streamHeader))
-    //val predictionsStream = instancesStream.map(new Predictor(streamHeader))
-    //val resultsStream = predictionsStream.map(new Evaluator())
+    val predictionsStream = instancesStream.map(new Predictor(streamHeader))
+    val resultsStream = predictionsStream.map(new Evaluator())
 
     //resultsStream.countWindowAll(1000, 1).sum(0).print()
 

@@ -6,7 +6,7 @@ import scala.io.Source
 class StreamHeader(path: String) extends Serializable {
 
   private var columnsFormat: Array[ColumnFormat] = Array()
-  private var _attNum: Int = 0
+  private var _attrNum: Int = 0
   private var _clsNum: Int = 0
 
   def parse(): StreamHeader = {
@@ -39,7 +39,7 @@ class StreamHeader(path: String) extends Serializable {
       } else if (line.startsWith("@data")) done = false
     }
 
-    _attNum = formats.length - 1
+    _attrNum = formats.length - 1
     _clsNum = formats.last.mapper.size
     columnsFormat = formats.toArray
     this
@@ -49,13 +49,17 @@ class StreamHeader(path: String) extends Serializable {
     if (columnsFormat(idx).numeric) value.toDouble else columnsFormat(idx).mapper(value)
   }
 
-  def attNum(): Int = _attNum
+  def columnName(idx: Int): String = {
+    columnsFormat(idx).name
+  }
+
+  def attrNum(): Int = _attrNum
 
   def clsNum(): Int = _clsNum
 
   def print(): Unit = {
     println("Stream header:")
-    println("\t#attributes = " + _attNum + "\n\t#classes = " + _clsNum)
+    println("\t#attributes = " + _attrNum + "\n\t#classes = " + _clsNum)
     for (c <- columnsFormat) {
       println("\t" + c.name + " " + c.numeric + " {" + c.mapper.mkString(", ") + "}")
     }

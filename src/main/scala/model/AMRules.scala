@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class AMRules(streamHeader: StreamHeader) extends Serializable {
 
-  private val attrNum: Int = streamHeader.attNum()
+  private val attrNum: Int = streamHeader.attrNum()
   private val clsNum: Int = streamHeader.clsNum()
 
   private val rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
@@ -21,7 +21,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   def update(instance: Instance): Unit = {
     var covered = false
 
-    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) { // dist
+    for ((rule, ruleId) <- rules.zipWithIndex) { // dist
       if (isCovered(instance, rule)) {
         updateStatistics(ruleId, instance)
         covered = true
@@ -38,7 +38,9 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
       if (rulesStats(0).count > EXT_MIN) {
         expandRule(0)
         rules.append(rules(0).copy())
+        rulesStats.append(new RuleStatistics(attrNum, clsNum))
         rules(0) = new Rule()
+        rulesStats(0) = new RuleStatistics(attrNum, clsNum)
       }
     }
 
@@ -56,26 +58,32 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
 
   private def updateStatistics(ruleId: Int, instance: Instance): Unit = {
     val ruleStats = rulesStats(ruleId)
-    val classAttributesMetrics = ruleStats.classesAttributesMetrics(instance.classLbl.toInt)
+    val clsIdx = instance.classLbl.toInt
+    val classAttributesMetrics = ruleStats.classesAttributesMetrics(clsIdx)
 
     ruleStats.count = ruleStats.count + 1
     classAttributesMetrics.count = classAttributesMetrics.count + 1
 
     for ((attVal, i) <- instance.attributes.zipWithIndex) { // dist? + todo: distinguish numeric/nominal
-      val attributeClassesMetrics = ruleStats.attributesClassesMetrics(i) // todo: get m - 3std / m + 3std instead
-      if (attVal > attributeClassesMetrics.max) attributeClassesMetrics.max = attVal
+      val attributeClassesMetrics = ruleStats.attributesClassesMetrics(i)
+      if (attVal > attributeClassesMetrics.max) attributeClassesMetrics.max = attVal // todo: get m - 3std / m + 3std instead
       if (attVal < attributeClassesMetrics.min) attributeClassesMetrics.min = attVal
+      ruleStats.attributesClassesMetrics(i) = attributeClassesMetrics
 
       val classAttributeMetrics = classAttributesMetrics.attributesMetrics(i)
-
       classAttributeMetrics.count = classAttributeMetrics.count + 1
 
-      val lastMean = classAttributeMetrics.mean
-      val lastStd = classAttributeMetrics.std
-      val count = classAttributeMetrics.count
+      if (classAttributeMetrics.count < 2) {
+        classAttributeMetrics.mean = attVal
+        classAttributeMetrics.std = 0
+      } else {
+        val lastMean = classAttributeMetrics.mean
+        val lastStd = classAttributeMetrics.std
+        val count = classAttributeMetrics.count
 
-      classAttributeMetrics.mean = classAttributeMetrics.mean + ((lastMean - attVal) / classAttributeMetrics.count)
-      classAttributeMetrics.std = ((count - 2) / (count - 1)) * math.pow(lastStd, 2) + (1 / count) * math.pow(attVal - lastMean, 2)
+        classAttributeMetrics.mean = classAttributeMetrics.mean + ((attVal - lastMean) / count)
+        classAttributeMetrics.std = ((count - 2.0) / (count - 1.0)) * math.pow(lastStd, 2) + (1.0 / count) * math.pow(attVal - lastMean, 2)
+      }
 
       classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics // todo: use windowed stats
     }
@@ -85,13 +93,13 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   }
 
   private def expandRule(ruleId: Int): Unit = {
-    val ruleEntropy = entropy(rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count.toDouble).toList)
+    val ruleEntropy = entropy(rulesStats(ruleId).classesAttributesMetrics.map(cm => cm.count.toDouble / rulesStats(ruleId).count).toList)
     val bound = calcHoeffdingBound(rulesStats(ruleId).count)
 
     var bestSplit: (Condition, Double) = (Condition(-1, "", -1), 1.0)
 
     if (ruleEntropy > bound) {
-      (0 to attrNum).foreach(attIdx => { // dist
+      (0 until attrNum).foreach(attIdx => { // dist
         val attrBestSplit = findBestSplit(ruleId, attIdx) // dist?
 
         if (attrBestSplit._2 < bestSplit._2) {
@@ -105,6 +113,10 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
 
       releaseStatistics(ruleId)
     }
+  }
+
+  private def releaseStatistics(ruleId: Int): Unit = {
+    rulesStats(ruleId) = new RuleStatistics(attrNum, clsNum) // todo: ok?
   }
 
   private def entropy(ps: List[Double]): Double = {
@@ -123,11 +135,11 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     var splitVal = min + step
 
     while (splitVal < max) {
-      val splitEntropy = entropy((0 to clsNum).map((clsIdx) => {
+      val splitEntropy = entropy((0 until clsNum).map((clsIdx) => {
         val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
-        val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std
+        val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std + Double.MinPositiveValue
         val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
-        - p * math.log10(p) / math.log10(2.0)
+        - p * math.log10(p) / math.log10(2.0) // todo: what about the right side
       }).toList)
 
       if (splitEntropy < minEntropySplit._1) minEntropySplit = (splitEntropy, splitVal)
@@ -135,11 +147,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
       splitVal = splitVal + step
     }
 
-    (Condition(attIdx, ">", minEntropySplit._2), minEntropySplit._1)
-  }
-
-  private def releaseStatistics(ruleId: Int): Unit = {
-    rulesStats(ruleId) = new RuleStatistics(clsNum, attrNum) // todo: ok?
+    (Condition(attIdx, "<=", minEntropySplit._2), minEntropySplit._1)
   }
 
   def predict(instance: Instance): Double = {
@@ -164,6 +172,21 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
     case ">" => instanceAtt > ruleVal
     case "=" => instanceAtt == ruleVal
     case "<=" => instanceAtt < ruleVal
+  }
+
+  def print(): Unit = {
+    println("\nCurrent AMRules:")
+
+    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
+      var cstr: ArrayBuffer[String] = ArrayBuffer()
+
+      for (c <- rule.conditions) {
+        cstr += s"${streamHeader.columnName(c.attributeIdx)} ${c.relation} ${c.value}"
+      }
+
+      println(s"Rule $ruleId: ${cstr.mkString(" AND ")}")
+    }
+    println
   }
 
 }
