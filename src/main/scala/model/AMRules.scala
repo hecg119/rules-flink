@@ -1,14 +1,14 @@
 package model
 
-import input.Instance
+import input.{Instance, StreamHeader}
 import org.apache.commons.math3.distribution.NormalDistribution
 
 import scala.collection.mutable.ArrayBuffer
 
-class AMRules() extends Serializable {
+class AMRules(streamHeader: StreamHeader) extends Serializable {
 
-  private val attrNum: Int = 10
-  private val clsNum: Int = 10
+  private val attrNum: Int = streamHeader.attNum()
+  private val clsNum: Int = streamHeader.clsNum()
 
   private val rules: ArrayBuffer[Rule] = ArrayBuffer(new Rule())
   private val rulesStats: ArrayBuffer[RuleStatistics] = ArrayBuffer(new RuleStatistics(attrNum, clsNum))
@@ -21,9 +21,9 @@ class AMRules() extends Serializable {
   def update(instance: Instance): Unit = {
     var covered = false
 
-    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
+    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) { // dist
       if (isCovered(instance, rule)) {
-        updateStatistics(ruleId, instance) // dist
+        updateStatistics(ruleId, instance)
         covered = true
 
         if (rulesStats(ruleId).count > EXT_MIN) {
@@ -38,7 +38,7 @@ class AMRules() extends Serializable {
       if (rulesStats(0).count > EXT_MIN) {
         expandRule(0)
         rules.append(rules(0).copy())
-        rules(0) = new Rule() // todo: clearing?
+        rules(0) = new Rule()
       }
     }
 
