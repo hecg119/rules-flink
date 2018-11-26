@@ -14,7 +14,7 @@ object DistributedRulesJob {
   def main(args: Array[String]) {
     println("Starting")
     val numPartitions = 8
-    val arffPath = "data\\ELEC_short.arff"
+    val arffPath = "data\\ELEC.arff"
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -27,8 +27,17 @@ object DistributedRulesJob {
     {
       val predictionsStream = iteration.process(new RulesAggregator(outputTag))
       val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
-      val newConditionsStream = rulesUpdatesStream.flatMap(new PartialRulesProcessor())
-      newConditionsStream.print()
+
+      val newConditionsStream = rulesUpdatesStream
+        .flatMap(new ReplicateInstance(numPartitions))
+        .partitionCustom(new IntegerPartitioner(numPartitions), 0)
+        .flatMap(new PartialRulesProcessor())
+        .setParallelism(numPartitions)
+        .map(e => e)
+        .setParallelism(1)
+
+      //newConditionsStream.print()
+
       (newConditionsStream, predictionsStream)
     }, 1)
 
@@ -41,13 +50,7 @@ object DistributedRulesJob {
 
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()
 
-    //    val partialPredictions = instancesStream
-    //      .flatMap(new ReplicateInstance(numPartitions))
-    //      .partitionCustom(new IntegerPartitioner(numPartitions), 0)
-    //      .map(new Predictor(ensemble=true))
-    //      .setParallelism(numPartitions)
-
-    val result = env.execute("Sequential AMRules")
+    val result = env.execute("Distributed AMRules")
 
 //    val correct: Double = result.getAccumulatorResult("correct-counter")
 //    val all: Double = result.getAccumulatorResult("all-counter")

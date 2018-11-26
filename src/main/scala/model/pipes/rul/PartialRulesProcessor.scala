@@ -5,10 +5,10 @@ import org.apache.flink.util.Collector
 
 import scala.util.Random
 
-class PartialRulesProcessor extends FlatMapFunction[Event, Event] {
+class PartialRulesProcessor extends FlatMapFunction[(Int, Event), Event] {
   var i = 0
 
-  override def flatMap(t: Event, collector: Collector[Event]): Unit = {
+  override def flatMap(t: (Int, Event), collector: Collector[Event]): Unit = {
     i = i + 1
     collector.collect(Event("NewCondition " + i))
   }

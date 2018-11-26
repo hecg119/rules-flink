@@ -15,12 +15,13 @@ class RulesAggregator(outputTag: OutputTag[Event]) extends ProcessFunction[Event
 
   override def processElement(value: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
     //println("Process: " + value)
+
     if (value.info.equals("Instance")) {
+      Thread.sleep(10)
       i = i + 1
       out.collect(Event("Prediction " + i))
     }
     //else if (value.info == "NewCondition") println("Received: " + value)
-
     if (Random.nextDouble() < 0.5) ctx.output(outputTag, Event("UpdateRule"))
   }
 
