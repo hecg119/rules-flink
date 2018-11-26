@@ -3,9 +3,10 @@ import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
 import input.{InputConverter, Instance, StreamHeader}
-import model.pipes.ens.{IntegerPartitioner, ReplicateInstance}
-import model.pipes.rul.{Event, PartialRulesProcessor, RulesAggregator}
-import model.pipes.seq.Predictor
+import utils.ReplicateInstance
+import pipes.rul.{Event, PartialRulesProcessor, RulesAggregator}
+import pipes.base.Predictor
+import utils.{IntegerPartitioner, ReplicateInstance}
 
 object DistributedRulesJob {
 
@@ -13,7 +14,7 @@ object DistributedRulesJob {
 
   def main(args: Array[String]) {
     println("Starting")
-    val numPartitions = 8
+    val numPartitions = 4
     val arffPath = "data\\ELEC.arff"
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
@@ -21,11 +22,11 @@ object DistributedRulesJob {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
 
-    val input: DataStream[Event] = env.fromCollection(Array.fill(100)(Event("Instance")))
+    val input: DataStream[Event] = env.fromCollection(Array.fill(1000)(Event("Instance")))
 
     val mainStream: DataStream[Event] = input.iterate((iteration: DataStream[Event]) =>
     {
-      val predictionsStream = iteration.process(new RulesAggregator(outputTag))
+      val predictionsStream = iteration.process(new RulesAggregator(outputTag))//.setParallelism(1) // rule updates will go to someone else?
       val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
 
       val newConditionsStream = rulesUpdatesStream
@@ -36,9 +37,9 @@ object DistributedRulesJob {
         .map(e => e)
         .setParallelism(1)
 
-      //newConditionsStream.print()
+      newConditionsStream.print()
 
-      (newConditionsStream, predictionsStream)
+      (newConditionsStream, predictionsStream) // interleave it more?
     }, 1)
 
     mainStream.print()

@@ -1,4 +1,4 @@
-package model.pipes.seq
+package pipes.base
 
 import input.{Instance, StreamHeader}
 import model.AMRules

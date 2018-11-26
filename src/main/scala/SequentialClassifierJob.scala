@@ -3,8 +3,8 @@ import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
 import input.{InputConverter, Instance, StreamHeader}
-import model.pipes.ens.{IntegerPartitioner, ReplicateInstance}
-import model.pipes.seq.Predictor
+import utils.ReplicateInstance
+import pipes.base.Predictor
 import org.apache.flink.api.common.functions.{MapFunction, ReduceFunction}
 import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
 

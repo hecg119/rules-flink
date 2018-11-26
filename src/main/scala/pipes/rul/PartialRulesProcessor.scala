@@ -1,4 +1,4 @@
-package model.pipes.rul
+package pipes.rul
 
 import org.apache.flink.api.common.functions.{FlatMapFunction, MapFunction}
 import org.apache.flink.util.Collector

@@ -1,7 +1,6 @@
-package model.pipes.ens
+package utils
 
-import input.Instance
-import model.pipes.rul.Event
+import pipes.rul.Event
 import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.util.Collector
 
