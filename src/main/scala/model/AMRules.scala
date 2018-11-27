@@ -6,58 +6,52 @@ import scala.collection.mutable.ArrayBuffer
 
 class AMRules(streamHeader: StreamHeader) extends Serializable {
 
+  private val EXT_MIN: Int = 100
+
   private val attrNum: Int = streamHeader.attrNum()
   private val clsNum: Int = streamHeader.clsNum()
 
+  private val defaultRule: DefaultRule = new DefaultRule(attrNum, clsNum, EXT_MIN)
   private val rules: ArrayBuffer[RuleBody] = ArrayBuffer(new RuleBody())
   private val rulesStats: ArrayBuffer[RuleMetrics] = ArrayBuffer(new RuleMetrics(attrNum, clsNum))
-
-  private val EXT_MIN: Int = 100
 
   def update(instance: Instance): Unit = {
     var covered = false
 
     for ((rule, ruleId) <- rules.zipWithIndex) {
-      if (ruleId > 0 && rule.cover(instance)) {
-        updateStatistics(ruleId, instance)
+      if (rule.cover(instance)) {
         covered = true
-
-        if (rulesStats(ruleId).count > EXT_MIN) {
-          expandRule(ruleId)
-        }
+        updateRule(ruleId, instance)
       }
     }
 
     if (!covered) {
-      updateStatistics(0, instance)
-
-      if (rulesStats(0).count > EXT_MIN) {
-        expandRule(0)
-        rules.append(new RuleBody(rules(0).conditions, rules(0).prediction))
+      if (defaultRule.update(instance)) {
+        rules.append(new RuleBody(defaultRule.ruleBody.conditions, defaultRule.ruleBody.prediction))
         rulesStats.append(new RuleMetrics(attrNum, clsNum))
-        rules(0) = new RuleBody()
-        rulesStats(0) = new RuleMetrics(attrNum, clsNum)
+        defaultRule.reset()
       }
     }
   }
 
-  private def updateStatistics(ruleId: Int, instance: Instance): Unit = {
+  private def updateRule(ruleId: Int, instance: Instance): Unit = {
     rulesStats(ruleId).updateStatistics(instance)
-  }
 
-  private def expandRule(ruleId: Int): Unit = {
-    val expansion: (Condition, Double) = rulesStats(ruleId).expandRule()
-    if (expansion != null) {
-      rules(ruleId).updateConditions(expansion._1)
-      rules(ruleId).updatePrediction(expansion._2.toDouble)
+    if (rulesStats(ruleId).count > EXT_MIN) {
+      val expansion: (Condition, Double) = rulesStats(ruleId).expandRule()
+
+      if (expansion != null) {
+        rules(ruleId).updateConditions(expansion._1)
+        rules(ruleId).updatePrediction(expansion._2.toDouble)
+      }
     }
   }
 
   def predict(instance: Instance): Double = {
     val votes = ArrayBuffer.fill(clsNum)(0)
 
-    for ((rule, ruleId) <- rules.zipWithIndex) {
-      if (ruleId > 0 && rule.cover(instance)) {
+    for (rule <- rules) {
+      if (rule.cover(instance)) {
         val clsIdx = rule.prediction.toInt
         votes(clsIdx) = votes(clsIdx) + 1
       }

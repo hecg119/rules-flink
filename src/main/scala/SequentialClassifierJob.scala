@@ -12,7 +12,7 @@ object SequentialClassifierJob {
 
   def main(args: Array[String]) {
     println("Starting")
-    val numPartitions = 1
+    val numPartitions = 4
     val arffPath = "data\\ELEC.arff"
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
