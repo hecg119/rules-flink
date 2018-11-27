@@ -11,6 +11,7 @@ object SequentialClassifierJob {
     println("Starting")
     val numPartitions = 4
     val arffPath = "data\\ELEC.arff"
+    val extMin = 100
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -19,7 +20,7 @@ object SequentialClassifierJob {
 
     val rawInputStream = env.readTextFile(arffPath).filter(line => !line.startsWith("@") && !line.isEmpty)
     val instancesStream = rawInputStream.map(new InputConverter(streamHeader))
-    val predictionsStream = instancesStream.map(new Predictor(streamHeader, 100)).setParallelism(numPartitions)
+    val predictionsStream = instancesStream.map(new Predictor(streamHeader, extMin)).setParallelism(numPartitions)
     val resultsStream = predictionsStream.map(new Evaluator())
 
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()

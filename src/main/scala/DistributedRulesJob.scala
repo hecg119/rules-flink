@@ -17,6 +17,7 @@ object DistributedRulesJob {
     println("Starting")
     val numPartitions = 1
     val arffPath = "data\\ELEC_short.arff"
+    val extMin = 100
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -30,7 +31,7 @@ object DistributedRulesJob {
 
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
-      val predictionsStream = iteration.process(new RulesAggregator(outputTag))//.setParallelism(1) // rule updates will go to someone else?
+      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, outputTag))//.setParallelism(1) // rule updates will go to someone else?
       val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
 //
 //      val newConditionsStream = rulesUpdatesStream
