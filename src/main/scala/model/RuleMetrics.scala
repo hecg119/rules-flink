@@ -52,7 +52,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
       classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics // todo: use windowed stats
     }
 
-    classesAttributesMetrics(instance.classLbl.toInt) = classAttributesMetrics
+    classesAttributesMetrics(clsIdx) = classAttributesMetrics // todo: update error/remove rule + classPrediction
   }
 
   def expandRule(): (Condition, Double) = {
@@ -81,7 +81,6 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
   }
 
   private def findBestSplit(attIdx: Int): (Condition, Double, Double) = { // todo: distinguish numeric/nominal
-    val classesAttributeMetrics = classesAttributesMetrics
     val min = attributesClassesMetrics(attIdx).min
     val max = attributesClassesMetrics(attIdx).max
     val step = (max - min) * SPLIT_GRAN
@@ -97,10 +96,10 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
       var maxCls = (Double.MinValue, -1)
 
       (0 until clsNum).foreach((clsIdx) => {
-        val mean = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).mean
-        val std = classesAttributeMetrics(clsIdx).attributesMetrics(attIdx).std + Double.MinPositiveValue
+        val mean = classesAttributesMetrics(clsIdx).attributesMetrics(attIdx).mean
+        val std = classesAttributesMetrics(clsIdx).attributesMetrics(attIdx).std + Double.MinPositiveValue
         val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
-        val cp = classesAttributeMetrics(clsIdx).count.toDouble / count
+        val cp = classesAttributesMetrics(clsIdx).count.toDouble / count
 
         psl += p * cp
         spl = spl + p * cp
@@ -133,3 +132,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
   private def calcHoeffdingBound(n: Int): Double = math.sqrt(R * R * math.log(1 / DELTA) / (2 * n))
 
 }
+
+case class ClassAttributesMetrics(var attributesMetrics: ArrayBuffer[AttributeMetrics], var count: Int)
+case class AttributeMetrics(var mean: Double, var std: Double)
+case class AttributeClassesMetrics(var min: Double, var max: Double)
