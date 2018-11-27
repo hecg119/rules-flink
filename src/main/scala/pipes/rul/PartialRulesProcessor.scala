@@ -1,21 +1,24 @@
 package pipes.rul
 
 import event.Event
-import input.Instance
+import input.{Instance, StreamHeader}
 import model.RuleMetrics
 import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.util.Collector
 
 import scala.collection.mutable
 
-class PartialRulesProcessor(attrNum: Int, clsNum: Int, extMin: Int) extends FlatMapFunction[Event, Event] {
+class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends FlatMapFunction[Event, Event] {
 
-  var i = 0
+  val attrNum: Int = streamHeader.attrNum()
+  val clsNum: Int = streamHeader.clsNum()
   val rulesStats: mutable.Map[Int, RuleMetrics] = mutable.Map()
 
   override def flatMap(event: Event, collector: Collector[Event]): Unit = {
 
-    if (event.getType.equals("NewRule")) rulesStats.put(event.ruleId, new RuleMetrics(attrNum, clsNum))
+    if (event.getType.equals("NewRule")) {
+      rulesStats.put(event.ruleId, new RuleMetrics(attrNum, clsNum))
+    }
     else if (event.getType.equals("UpdateRule")) {
       val ruleId = event.ruleId
       if (!rulesStats.contains(ruleId)) {
@@ -24,7 +27,9 @@ class PartialRulesProcessor(attrNum: Int, clsNum: Int, extMin: Int) extends Flat
 
       updateRule(ruleId, event.instance, collector)
 
-    } else throw new Error(s"This operator handles only NewRule and UpdateRule events. Received: ${event.getType}")
+    } else {
+      throw new Error(s"This operator handles only NewRule and UpdateRule events. Received: ${event.getType}")
+    }
   }
 
   private def updateRule(ruleId: Int, instance: Instance, collector: Collector[Event]): Unit = {

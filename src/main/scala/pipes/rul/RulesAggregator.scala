@@ -24,7 +24,9 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
       update(instance, ctx)
       out.collect(new Event("Prediction", instance.classLbl, predict(instance)))
     }
-    else if (event.getType.equals("NewCondition")) updateRule(event.ruleId, event.condition, event.prediction)
+    else if (event.getType.equals("NewCondition")) {
+      updateRule(event.ruleId, event.condition, event.prediction)
+    }
     else throw new Error(s"This operator handles only Instance and NewCondition events. Received: ${event.getType}")
   }
 

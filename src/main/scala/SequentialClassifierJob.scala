@@ -3,12 +3,13 @@ import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
 import input.{InputConverter, StreamHeader}
-import pipes.base.Predictor
+import pipes.base.SinglePredictor
 
 object SequentialClassifierJob {
 
   def main(args: Array[String]) {
     println("Starting")
+    
     val numPartitions = 4
     val arffPath = "data\\ELEC.arff"
     val extMin = 100
@@ -20,7 +21,7 @@ object SequentialClassifierJob {
 
     val rawInputStream = env.readTextFile(arffPath).filter(line => !line.startsWith("@") && !line.isEmpty)
     val instancesStream = rawInputStream.map(new InputConverter(streamHeader))
-    val predictionsStream = instancesStream.map(new Predictor(streamHeader, extMin)).setParallelism(numPartitions)
+    val predictionsStream = instancesStream.map(new SinglePredictor(streamHeader, extMin)).setParallelism(numPartitions)
     val resultsStream = predictionsStream.map(new Evaluator())
 
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()

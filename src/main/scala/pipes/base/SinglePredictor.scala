@@ -5,7 +5,7 @@ import model.SequentialAMR
 import org.apache.flink.api.common.functions.MapFunction
 import event.Event
 
-class Predictor(streamHeader: StreamHeader, extMin: Int) extends MapFunction[Event, Event] {
+class SinglePredictor(streamHeader: StreamHeader, extMin: Int) extends MapFunction[Event, Event] {
 
   private val rulesModel: SequentialAMR = new SequentialAMR(streamHeader, extMin) // todo: add state management
 
