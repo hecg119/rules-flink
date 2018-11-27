@@ -15,7 +15,6 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
 
   val rules: ArrayBuffer[RuleBody] = ArrayBuffer()
   val defaultRule: DefaultRule = new DefaultRule(streamHeader.attrNum(), streamHeader.clsNum(), extMin)
-  var i = 0
 
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
     println("Process: " + event)
@@ -35,10 +34,10 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((i: Int) => ctx.output(outputTag, new Event("UpdateRule", i)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(outputTag, new Event("UpdateRule", ruleId)))
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
-      ctx.output(outputTag, new Event("NewRule", i))
+      ctx.output(outputTag, new Event("NewRule", rules.length - 1))
     }
   }
 
