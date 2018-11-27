@@ -4,14 +4,12 @@ import input.{Instance, StreamHeader}
 
 import scala.collection.mutable.ArrayBuffer
 
-class AMRules(streamHeader: StreamHeader) extends Serializable {
-
-  private val EXT_MIN: Int = 100
+class AMRules(streamHeader: StreamHeader, extMin: Int) extends Serializable {
 
   private val attrNum: Int = streamHeader.attrNum()
   private val clsNum: Int = streamHeader.clsNum()
 
-  private val defaultRule: DefaultRule = new DefaultRule(attrNum, clsNum, EXT_MIN)
+  private val defaultRule: DefaultRule = new DefaultRule(attrNum, clsNum, extMin)
   private val rules: ArrayBuffer[RuleBody] = ArrayBuffer(new RuleBody())
   private val rulesStats: ArrayBuffer[RuleMetrics] = ArrayBuffer(new RuleMetrics(attrNum, clsNum))
 
@@ -37,7 +35,7 @@ class AMRules(streamHeader: StreamHeader) extends Serializable {
   private def updateRule(ruleId: Int, instance: Instance): Unit = {
     rulesStats(ruleId).updateStatistics(instance)
 
-    if (rulesStats(ruleId).count > EXT_MIN) {
+    if (rulesStats(ruleId).count > extMin) {
       val expansion: (Condition, Double) = rulesStats(ruleId).expandRule()
 
       if (expansion != null) {

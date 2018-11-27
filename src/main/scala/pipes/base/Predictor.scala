@@ -7,10 +7,10 @@ import org.apache.flink.api.common.state.ListState
 import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
 
-class Predictor(streamHeader: StreamHeader) extends CheckpointedFunction with MapFunction[Instance, (Double, Double)] {
+class Predictor(streamHeader: StreamHeader, extMin: Int) extends CheckpointedFunction with MapFunction[Instance, (Double, Double)] {
 
   private var rulesState: ListState[AMRules] = _
-  private val rulesModel: AMRules = new AMRules(streamHeader)
+  private val rulesModel: AMRules = new AMRules(streamHeader, extMin)
 
   override def snapshotState(functionSnapshotContext: FunctionSnapshotContext): Unit = {}
 
