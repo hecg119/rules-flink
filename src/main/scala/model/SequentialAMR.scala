@@ -47,16 +47,7 @@ class SequentialAMR(streamHeader: StreamHeader, extMin: Int) extends Serializabl
   }
 
   def predict(instance: Instance): Double = {
-    val votes = ArrayBuffer.fill(clsNum)(0)
-
-    for (rule <- rules) {
-      if (rule.cover(instance)) {
-        val clsIdx = rule.prediction.toInt
-        votes(clsIdx) = votes(clsIdx) + 1
-      }
-    }
-
-    votes.indices.maxBy(votes)
+    Rules.classify(instance, rules.toArray, clsNum)
   }
 
   def print(): Unit = {

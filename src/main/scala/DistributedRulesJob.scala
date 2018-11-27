@@ -9,15 +9,15 @@ import utils.IntegerPartitioner
 
 object DistributedRulesJob {
 
-  val outputTag = new OutputTag[Event]("side-output")
+  val metricsUpdateTag = new OutputTag[Event]("metrics-update")
 
   def main(args: Array[String]) {
-    println("Starting")
+    println("Starting...")
 
     val numPartitions = 4
     val itMaxDelay = 5000
-    val arffPath = "data\\COVERTYPE.arff"
-    val extMin = 1000
+    val arffPath = "data\\ELEC.arff"
+    val extMin = 100
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -29,8 +29,8 @@ object DistributedRulesJob {
 
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
-      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, outputTag))
-      val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
+      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, metricsUpdateTag))
+      val rulesUpdatesStream = predictionsStream.getSideOutput(metricsUpdateTag)
 
       val newConditionsStream = rulesUpdatesStream
         .map((e: Event) => (e, e.ruleId))

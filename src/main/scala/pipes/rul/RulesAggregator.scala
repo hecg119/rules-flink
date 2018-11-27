@@ -10,7 +10,7 @@ import utils.Rules
 
 import scala.collection.mutable.ArrayBuffer
 
-class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: OutputTag[Event]) extends ProcessFunction[Event, Event] {
+class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[Event]) extends ProcessFunction[Event, Event] {
 
   val clsNum: Int = streamHeader.clsNum()
 
@@ -38,26 +38,17 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(outputTag, new Event("UpdateRule", ruleId, instance)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, new Event("UpdateRule", ruleId, instance)))
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
-      ctx.output(outputTag, new Event("NewRule", rules.length))
+      ctx.output(metricsUpdateTag, new Event("NewRule", rules.length))
       rules.append(new RuleBody(defaultRule.ruleBody.conditions, defaultRule.ruleBody.prediction))
       defaultRule.reset()
     }
   }
 
-  def predict(instance: Instance): Double = { // todo: optimize/merge with seq
-    val votes = ArrayBuffer.fill(clsNum)(0)
-
-    for (rule <- rules) {
-      if (rule.cover(instance)) {
-        val clsIdx = rule.prediction.toInt
-        votes(clsIdx) = votes(clsIdx) + 1
-      }
-    }
-
-    votes.indices.maxBy(votes)
+  def predict(instance: Instance): Double = {
+    Rules.classify(instance, rules.toArray, clsNum)
   }
 
   def updateRule(ruleId: Int, newCondition: Condition, newPrediction: Double): Unit = {

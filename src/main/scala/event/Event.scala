@@ -3,6 +3,8 @@ package event
 import input.Instance
 import model.Condition
 
+// todo: very ugly, change to common interface + case/match
+
 class Event(eventType: String) extends Serializable {
 
   var instance: Instance = _
@@ -42,6 +44,5 @@ class Event(eventType: String) extends Serializable {
     this.prediction = prediction
   }
 
-  // todo: change to common interface + case/match
 }
 
