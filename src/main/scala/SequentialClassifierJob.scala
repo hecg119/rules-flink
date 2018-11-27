@@ -8,11 +8,16 @@ import pipes.base.SinglePredictor
 object SequentialClassifierJob {
 
   def main(args: Array[String]) {
-    println("Starting...")
+    println("Starting: SequentialClassifierJob")
 
-    val numPartitions = 8
-    val arffPath = "data\\ELEC.arff"
-    val extMin = 100
+    if (args.length < 4) {
+      println("Too few parameters, expected: 3. Usage: ")
+    }
+
+    val arffPath = args(1) //"data\\ELEC.arff"
+    val numPartitions = args(2).toInt //8
+    val extMin = args(3).toInt //100
+
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 

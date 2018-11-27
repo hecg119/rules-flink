@@ -12,12 +12,17 @@ object DistributedRulesJob {
   val metricsUpdateTag = new OutputTag[Event]("metrics-update")
 
   def main(args: Array[String]) {
-    println("Starting...")
+    println("Starting: DistributedRulesJob")
 
-    val numPartitions = 4
-    val itMaxDelay = 5000
-    val arffPath = "data\\ELEC.arff"
-    val extMin = 100
+    if (args.length < 5) {
+      println("Too few parameters, expected: 4. Usage: ")
+    }
+
+    val arffPath = args(1) //"data\\ELEC.arff"
+    val numPartitions = args(2).toInt //8
+    val extMin = args(3).toInt //100
+    val itMaxDelay = args(4).toInt //5000
+
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
