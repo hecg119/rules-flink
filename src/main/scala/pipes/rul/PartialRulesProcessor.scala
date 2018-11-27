@@ -8,19 +8,24 @@ import org.apache.flink.util.Collector
 
 import scala.collection.mutable
 
-class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends FlatMapFunction[Event, Event] {
+class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends FlatMapFunction[(Event, Int), Event] {
 
   val attrNum: Int = streamHeader.attrNum()
   val clsNum: Int = streamHeader.clsNum()
   val rulesStats: mutable.Map[Int, RuleMetrics] = mutable.Map()
 
-  override def flatMap(event: Event, collector: Collector[Event]): Unit = {
+  var i = 0
+
+  override def flatMap(eventWithId: (Event, Int), collector: Collector[Event]): Unit = {
+    val event = eventWithId._1
+    //println("Partial: " + event.getType)
 
     if (event.getType.equals("NewRule")) {
       rulesStats.put(event.ruleId, new RuleMetrics(attrNum, clsNum))
     }
     else if (event.getType.equals("UpdateRule")) {
       val ruleId = event.ruleId
+
       if (!rulesStats.contains(ruleId)) {
         throw new Error(s"This partition maintains rules: ${rulesStats.keys.mkString(" ")}. Received: $ruleId.")
       }

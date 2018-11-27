@@ -6,6 +6,7 @@ import model.{Condition, DefaultRule, RuleBody}
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.streaming.api.scala.OutputTag
 import org.apache.flink.util.Collector
+import utils.Rules
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -17,7 +18,8 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
   val defaultRule: DefaultRule = new DefaultRule(streamHeader.attrNum(), streamHeader.clsNum(), extMin)
 
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
-    println("Process: " + event)
+    //println("Process: " + event.getType)
+    //print()
 
     if (event.getType.equals("Instance")) {
       val instance = event.instance
@@ -36,10 +38,15 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(outputTag, new Event("UpdateRule", ruleId)))
+    rulesToUpdate.foreach((ruleId: Int) => {
+      //println("Update rule")
+      ctx.output(outputTag, new Event("UpdateRule", ruleId, instance))
+    })
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
-      ctx.output(outputTag, new Event("NewRule", rules.length - 1))
+      ctx.output(outputTag, new Event("NewRule", rules.length))
+      rules.append(new RuleBody(defaultRule.ruleBody.conditions, defaultRule.ruleBody.prediction))
+      defaultRule.reset()
     }
   }
 
@@ -59,6 +66,10 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
   def updateRule(ruleId: Int, newCondition: Condition, newPrediction: Double): Unit = {
     rules(ruleId).updateConditions(newCondition)
     rules(ruleId).updatePrediction(newPrediction)
+  }
+
+  def print(): Unit = {
+    Rules.printRules(rules.toArray, streamHeader)
   }
 
 }

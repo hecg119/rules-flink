@@ -1,6 +1,7 @@
 package model
 
 import input.{Instance, StreamHeader}
+import utils.Rules
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -59,18 +60,7 @@ class SequentialAMR(streamHeader: StreamHeader, extMin: Int) extends Serializabl
   }
 
   def print(): Unit = {
-    println(s"\nCurrent AMRules [${rules.length - 1}]:")
-
-    for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
-      var cstr: ArrayBuffer[String] = ArrayBuffer()
-
-      for (c <- rule.conditions) {
-        cstr += s"${streamHeader.columnName(c.attributeIdx)} ${c.relation} ${c.value}"
-      }
-
-      println(s"Rule $ruleId: IF ${cstr.mkString(" AND ")} THEN ${rule.prediction}")
-    }
-    println
+    Rules.printRules(rules.toArray, streamHeader)
   }
 
 }

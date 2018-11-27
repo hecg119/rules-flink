@@ -15,7 +15,7 @@ object DistributedRulesJob {
     println("Starting")
 
     val numPartitions = 1
-    val arffPath = "data\\ELEC_short.arff"
+    val arffPath = "data\\ELEC.arff"
     val extMin = 100
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
@@ -31,19 +31,19 @@ object DistributedRulesJob {
       val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, outputTag))
       val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
 
-      val newConditionsStream = rulesUpdatesStream
-        .partitionCustom(new IntegerPartitioner(numPartitions), 0)
+      val newConditionsStream1 = rulesUpdatesStream
+        .map((e: Event) => (e, e.ruleId))
+        .partitionCustom(new IntegerPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-        .map(e => e)
+
+      //newConditionsStream1.print()
+
+      val newConditionsStream2 = newConditionsStream1.map(e => e)
         .setParallelism(1)
 
-      newConditionsStream.print()
-
-      (rulesUpdatesStream, predictionsStream) // interleave it more? how?
-    }, 1)
-
-    mainStream.print()
+      (newConditionsStream1, predictionsStream)
+    }, 5000)
 
     val resultsStream = mainStream.map(new Evaluator())
 
