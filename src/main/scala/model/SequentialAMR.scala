@@ -4,7 +4,7 @@ import input.{Instance, StreamHeader}
 
 import scala.collection.mutable.ArrayBuffer
 
-class AMRules(streamHeader: StreamHeader, extMin: Int) extends Serializable {
+class SequentialAMR(streamHeader: StreamHeader, extMin: Int) extends Serializable {
 
   private val attrNum: Int = streamHeader.attrNum()
   private val clsNum: Int = streamHeader.clsNum()
