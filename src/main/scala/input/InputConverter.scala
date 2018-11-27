@@ -10,7 +10,7 @@ class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Eve
 
     val convertedColumns = columns
       .zipWithIndex
-      .map({ case (c: String, idx: Int) => streamHeader.column(idx, c) })
+      .map({ case (c: String, idx: Int) => streamHeader.column(idx, c.trim) })
 
     new Event("Instance", Instance(convertedColumns.dropRight(1), convertedColumns.last))
   }

@@ -17,14 +17,14 @@ class StreamHeader(path: String) extends Serializable {
     while (lines.hasNext && !done) {
       val line = lines.next()
 
-      if (line.startsWith("@attribute")) {
+      if (line.toLowerCase.startsWith("@attribute")) {
         val c = line.split(" ").drop(1)
 
-        if (c(1) == "numeric") {
+        if (c(1).toLowerCase == "numeric") {
           formats += ColumnFormat(c(0), numeric=true, Map())
         }
         else if (c(1).startsWith("{")) {
-          val values = c(1).replace("{", "").replace("}", "").split(",")
+          val values = c(1).replace("{", "").replace("}", "").replaceAll("\"", "").replaceAll("'", "").trim.split(",")
           val mapper: scala.collection.mutable.Map[String, Double] = scala.collection.mutable.Map()
 
           for ((v, i) <- values.zipWithIndex) {
@@ -36,7 +36,7 @@ class StreamHeader(path: String) extends Serializable {
           throw new Error("Wrong row format! Aborting the job.")
         }
 
-      } else if (line.startsWith("@data")) done = false
+      } else if (line.toLowerCase.startsWith("@data")) done = false
     }
 
     _attrNum = formats.length - 1
