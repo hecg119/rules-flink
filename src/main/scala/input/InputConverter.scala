@@ -1,17 +1,18 @@
 package input
 
+import event.Event
 import org.apache.flink.api.common.functions.MapFunction
 
-class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Instance] {
+class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Event] {
 
-  override def map(rawInput: String): Instance = {
+  override def map(rawInput: String): Event = {
     val columns = rawInput.split(",")
 
     val convertedColumns = columns
       .zipWithIndex
       .map({ case (c: String, idx: Int) => streamHeader.column(idx, c) })
 
-    Instance(convertedColumns.dropRight(1), convertedColumns.last)
+    new Event("Instance", Instance(convertedColumns.dropRight(1), convertedColumns.last))
   }
 
 }
