@@ -5,7 +5,7 @@ import eval.Evaluator
 import event.Event
 import input.{InputConverter, StreamHeader}
 import pipes.rul.{PartialRulesProcessor, RulesAggregator}
-import utils.IntegerPartitioner
+import utils.{Files, IntegerPartitioner}
 
 object DistributedRulesJob {
 
@@ -57,9 +57,13 @@ object DistributedRulesJob {
 
     val correct: Double = result.getAccumulatorResult("correct-counter")
     val all: Double = result.getAccumulatorResult("all-counter")
+    val accuracy: Double = correct / all
+    val time: Long = result.getNetRuntime(TimeUnit.MILLISECONDS)
 
-    System.out.println("Execution time: " + (result.getNetRuntime(TimeUnit.MILLISECONDS) - itMaxDelay) + " ms")
-    println("Accuracy: " + (correct / all))
+    println(s"Accuracy: $accuracy")
+    System.out.println(s"Execution time: $time ms")
+
+    Files.writeResultsToFile("tmp", arffPath, accuracy, time, "Vertical", numPartitions)
   }
 
 }

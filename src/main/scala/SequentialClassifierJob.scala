@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 import eval.Evaluator
 import input.{InputConverter, StreamHeader}
 import pipes.base.SinglePredictor
+import utils.Files
 
 object SequentialClassifierJob {
 
@@ -36,9 +37,13 @@ object SequentialClassifierJob {
 
     val correct: Double = result.getAccumulatorResult("correct-counter")
     val all: Double = result.getAccumulatorResult("all-counter")
+    val accuracy: Double = correct / all
+    val time: Long = result.getNetRuntime(TimeUnit.MILLISECONDS)
 
-    System.out.println("Execution time: " + result.getNetRuntime(TimeUnit.MILLISECONDS) + " ms")
-    println("Accuracy: " + (correct / all))
+    println(s"Accuracy: $accuracy")
+    System.out.println(s"Execution time: $time ms")
+
+    Files.writeResultsToFile("tmp", arffPath, accuracy, time, "Horizontal", numPartitions)
   }
 
 }
