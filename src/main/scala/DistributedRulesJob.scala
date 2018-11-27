@@ -12,16 +12,16 @@ object DistributedRulesJob {
   val metricsUpdateTag = new OutputTag[Event]("metrics-update")
 
   def main(args: Array[String]) {
-    println("Starting: DistributedRulesJob")
-
-    if (args.length < 5) {
-      println("Too few parameters, expected: 4. Usage: ")
+    if (args.length < 4) {
+      println("Too few parameters, expected: 4. Usage: java -jar rules-flink.jar data/ELEC.arff 8 100 5000")
     }
 
     val arffPath = args(1) //"data\\ELEC.arff"
     val numPartitions = args(2).toInt //8
     val extMin = args(3).toInt //100
     val itMaxDelay = args(4).toInt //5000
+
+    println(s"Starting DistributedRulesJob with: $arffPath $numPartitions $extMin $itMaxDelay")
 
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()

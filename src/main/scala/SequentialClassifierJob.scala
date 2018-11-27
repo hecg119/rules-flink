@@ -8,15 +8,15 @@ import pipes.base.SinglePredictor
 object SequentialClassifierJob {
 
   def main(args: Array[String]) {
-    println("Starting: SequentialClassifierJob")
-
-    if (args.length < 4) {
-      println("Too few parameters, expected: 3. Usage: ")
+    if (args.length < 3) {
+      println("Too few parameters, expected: 3. Usage: java -jar rules-flink.jar data/ELEC.arff 8 100")
     }
 
     val arffPath = args(1) //"data\\ELEC.arff"
     val numPartitions = args(2).toInt //8
     val extMin = args(3).toInt //100
+
+    println(s"Starting SequentialClassifierJob with: $arffPath $numPartitions $extMin")
 
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
