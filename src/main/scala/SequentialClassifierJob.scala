@@ -2,11 +2,8 @@ import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
-import input.{InputConverter, Instance, StreamHeader}
-import utils.ReplicateInstance
+import input.{InputConverter, StreamHeader}
 import pipes.base.Predictor
-import org.apache.flink.api.common.functions.{MapFunction, ReduceFunction}
-import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
 
 object SequentialClassifierJob {
 
@@ -31,7 +28,7 @@ object SequentialClassifierJob {
 
     val correct: Double = result.getAccumulatorResult("correct-counter")
     val all: Double = result.getAccumulatorResult("all-counter")
-//
+
     System.out.println("Execution time: " + result.getNetRuntime(TimeUnit.MILLISECONDS) + " ms")
     println("Accuracy: " + (correct / all))
   }
