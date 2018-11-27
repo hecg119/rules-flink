@@ -39,17 +39,19 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
 
       if (classAttributesMetrics.count < 2) {
         classAttributeMetrics.mean = attVal
-        classAttributeMetrics.std = 0
+        classAttributeMetrics.std = 0.0
       } else {
         val lastMean = classAttributeMetrics.mean
         val lastStd = classAttributeMetrics.std
-        val count = classAttributesMetrics.count // todo: check
+        val count = classAttributesMetrics.count
 
         classAttributeMetrics.mean = classAttributeMetrics.mean + ((attVal - lastMean) / count)
-        classAttributeMetrics.std = ((count - 2.0) / (count - 1.0)) * math.pow(lastStd, 2) + (1.0 / count) * math.pow(attVal - lastMean, 2)
+        classAttributeMetrics.std = math.sqrt(
+          ((count - 2.0) / (count - 1.0)) * math.pow(lastStd, 2) + (1.0 / count) * math.pow(attVal - lastMean, 2)
+        )
       }
 
-      classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics // todo: use windowed stats
+      classAttributesMetrics.attributesMetrics(i) = classAttributeMetrics
     }
 
     classesAttributesMetrics(clsIdx) = classAttributesMetrics // todo: update error/remove rule + classPrediction
@@ -98,7 +100,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
       (0 until clsNum).foreach((clsIdx) => {
         val mean = classesAttributesMetrics(clsIdx).attributesMetrics(attIdx).mean
         val std = classesAttributesMetrics(clsIdx).attributesMetrics(attIdx).std + Double.MinPositiveValue
-        val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal)
+        val p = new NormalDistribution(mean, std).cumulativeProbability(splitVal) + Double.MinPositiveValue
         val cp = classesAttributesMetrics(clsIdx).count.toDouble / count
 
         psl += p * cp
@@ -109,7 +111,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
         if (psl.last > maxCls._1) maxCls = (psl.last, psl.length - 1)
       })
 
-      val splitEntropy = entropy(psl.map(p => p / spl).toList) + entropy(psr.map(p => p / spr).toList)
+      val splitEntropy = (entropy(psl.map(p => p / spl).toList) + entropy(psr.map(p => p / spr).toList)) / 2.0
 
       if (splitEntropy < minEntropySplit._1) minEntropySplit = (splitEntropy, splitVal, maxCls._2)
 

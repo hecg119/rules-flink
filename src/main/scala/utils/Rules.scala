@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 object Rules {
 
   def printRules(rules: Array[RuleBody], streamHeader: StreamHeader): Unit = {
-    println(s"\nCurrent AMRules [${rules.length - 1}]:")
+    println(s"\nCurrent AMRules [${rules.length}]:")
 
     for ((rule, ruleId) <- rules.drop(1).zipWithIndex) {
       var cstr: ArrayBuffer[String] = ArrayBuffer()

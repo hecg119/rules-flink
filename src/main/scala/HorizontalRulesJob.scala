@@ -9,13 +9,13 @@ import utils.Files
 object HorizontalRulesJob {
 
   def main(args: Array[String]) {
-    if (args.length < 3) {
-      println("Too few parameters, expected: 3. Usage: java -jar rules-flink.jar data/ELEC.arff 8 100")
-    }
+//    if (args.length < 3) {
+//      println("Too few parameters, expected: 3. Usage: java -jar rules-flink.jar data/ELEC.arff 8 100")
+//    }
 
-    val arffPath = args(1) //"data\\ELEC_short.arff"
-    val numPartitions = args(2).toInt //8
-    val extMin = args(3).toInt //100
+    val arffPath = "data\\WEATHER.arff"
+    val numPartitions = 1
+    val extMin = 100
 
     println(s"Starting HorizontalRulesJob with: $arffPath $numPartitions $extMin")
 

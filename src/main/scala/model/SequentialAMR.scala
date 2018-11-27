@@ -11,8 +11,8 @@ class SequentialAMR(streamHeader: StreamHeader, extMin: Int) extends Serializabl
   private val clsNum: Int = streamHeader.clsNum()
 
   private val defaultRule: DefaultRule = new DefaultRule(attrNum, clsNum, extMin)
-  private val rules: ArrayBuffer[RuleBody] = ArrayBuffer(new RuleBody())
-  private val rulesStats: ArrayBuffer[RuleMetrics] = ArrayBuffer(new RuleMetrics(attrNum, clsNum))
+  private val rules: ArrayBuffer[RuleBody] = ArrayBuffer()
+  private val rulesStats: ArrayBuffer[RuleMetrics] = ArrayBuffer()
 
   def update(instance: Instance): Unit = {
     var covered = false
