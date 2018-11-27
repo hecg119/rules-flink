@@ -10,9 +10,9 @@ object SequentialClassifierJob {
   def main(args: Array[String]) {
     println("Starting")
 
-    val numPartitions = 1
-    val arffPath = "data\\ELEC.arff"
-    val extMin = 100
+    val numPartitions = 4
+    val arffPath = "data\\COVERTYPE.arff"
+    val extMin = 1000
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -24,6 +24,7 @@ object SequentialClassifierJob {
     val predictionsStream = instancesStream.map(new SinglePredictor(streamHeader, extMin)).setParallelism(numPartitions)
     val resultsStream = predictionsStream.map(new Evaluator())
 
+    //resultsStream.print()
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()
 
     val result = env.execute("Sequential AMRules")

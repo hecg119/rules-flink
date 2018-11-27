@@ -14,9 +14,10 @@ object DistributedRulesJob {
   def main(args: Array[String]) {
     println("Starting")
 
-    val numPartitions = 1
-    val arffPath = "data\\ELEC.arff"
-    val extMin = 100
+    val numPartitions = 4
+    val itMaxDelay = 5000
+    val arffPath = "data\\COVERTYPE.arff"
+    val extMin = 1000
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
 
@@ -31,22 +32,20 @@ object DistributedRulesJob {
       val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, outputTag))
       val rulesUpdatesStream = predictionsStream.getSideOutput(outputTag)
 
-      val newConditionsStream1 = rulesUpdatesStream
+      val newConditionsStream = rulesUpdatesStream
         .map((e: Event) => (e, e.ruleId))
         .partitionCustom(new IntegerPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-
-      //newConditionsStream1.print()
-
-      val newConditionsStream2 = newConditionsStream1.map(e => e)
+        .map(e => e)
         .setParallelism(1)
 
-      (newConditionsStream1, predictionsStream)
-    }, 5000)
+      (newConditionsStream, predictionsStream)
+    }, itMaxDelay)
 
     val resultsStream = mainStream.map(new Evaluator())
 
+    //resultsStream.print()
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()
 
     val result = env.execute("Distributed AMRules")
@@ -54,7 +53,7 @@ object DistributedRulesJob {
     val correct: Double = result.getAccumulatorResult("correct-counter")
     val all: Double = result.getAccumulatorResult("all-counter")
 
-    System.out.println("Execution time: " + result.getNetRuntime(TimeUnit.MILLISECONDS) + " ms")
+    System.out.println("Execution time: " + (result.getNetRuntime(TimeUnit.MILLISECONDS) - itMaxDelay) + " ms")
     println("Accuracy: " + (correct / all))
   }
 

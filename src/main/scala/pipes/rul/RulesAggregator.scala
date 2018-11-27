@@ -38,10 +38,7 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, outputTag: Output
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((ruleId: Int) => {
-      //println("Update rule")
-      ctx.output(outputTag, new Event("UpdateRule", ruleId, instance))
-    })
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(outputTag, new Event("UpdateRule", ruleId, instance)))
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
       ctx.output(outputTag, new Event("NewRule", rules.length))

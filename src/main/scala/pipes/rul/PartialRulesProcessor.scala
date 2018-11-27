@@ -3,12 +3,12 @@ package pipes.rul
 import event.Event
 import input.{Instance, StreamHeader}
 import model.RuleMetrics
-import org.apache.flink.api.common.functions.FlatMapFunction
+import org.apache.flink.api.common.functions.RichFlatMapFunction
 import org.apache.flink.util.Collector
 
 import scala.collection.mutable
 
-class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends FlatMapFunction[(Event, Int), Event] {
+class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends RichFlatMapFunction[(Event, Int), Event] {
 
   val attrNum: Int = streamHeader.attrNum()
   val clsNum: Int = streamHeader.clsNum()
@@ -17,8 +17,8 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Fla
   var i = 0
 
   override def flatMap(eventWithId: (Event, Int), collector: Collector[Event]): Unit = {
+    //println(s"Partial [${getRuntimeContext.getIndexOfThisSubtask}]: " + event.getType)
     val event = eventWithId._1
-    //println("Partial: " + event.getType)
 
     if (event.getType.equals("NewRule")) {
       rulesStats.put(event.ruleId, new RuleMetrics(attrNum, clsNum))
