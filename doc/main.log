@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 01:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 02:34
 entering extended mode
 **./main.tex
 (main.tex
@@ -826,24 +826,24 @@ your preamble.
 
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Try loading font information for U+msa on input line 72.
+LaTeX Font Info:    Try loading font information for U+msa on input line 71.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 72.
+LaTeX Font Info:    Try loading font information for U+msb on input line 71.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 72.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 71.
 
-Underfull \hbox (badness 3019) in paragraph at lines 114--116
+Underfull \hbox (badness 3019) in paragraph at lines 113--115
 \OT1/ptm/m/n/10 How-ever, since com-pu-ta-tion are still or-ga-nized in
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 114--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--115
 
  []
 
@@ -851,33 +851,66 @@ Underfull \hbox (badness 10000) in paragraph at lines 114--116
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 116--118
+Underfull \hbox (badness 10000) in paragraph at lines 115--117
 
  []
 
-[2] (main.aux) ) 
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 148.
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\ot1pcr.fd"
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
+
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 150--151
+
+ []
+
+<img/vertical.pdf, id=23, pagebox=cropbox, 437.635pt x 373.395pt>
+File: img/vertical.pdf Graphic file (type pdf)
+<use img/vertical.pdf>
+Package pdftex.def Info: img/vertical.pdf  used on input line 158. on input lin
+e 158.
+Package pdftex.def Info: Requested size: 196.93393pt x 168.0262pt on input line
+ 158.
+
+Underfull \hbox (badness 3168) in paragraph at lines 167--168
+[]\OT1/ptm/m/n/10 To im-ple-ment the hor-i-zon-tal par-al-leliza-tion we sim-
+ []
+
+[3
+
+ <./img/vertical.pdf
+
+pdfTeX warning: pdflatex.exe (file ./img/vertical.pdf): PDF inclusion: invalid 
+other resource which is no dict (key 'ProcSets', type <array>); ignored.
+>] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 25426 strings out of 493312
- 640806 string characters out of 3138899
- 799775 words of memory out of 3000000
- 28530 multiletter control sequences out of 15000+200000
- 49205 words of font info for 99 fonts, out of 3000000 for 9000
+ 25473 strings out of 493312
+ 641271 string characters out of 3138899
+ 799783 words of memory out of 3000000
+ 28571 multiletter control sequences out of 15000+200000
+ 49720 words of font info for 101 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  62i,9n,96p,1143b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Pr
-ogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Fi
-les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKT
-eX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fo
-nts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/c
-m/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/P
-rogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiK
-TeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
-e1/urw/times/utmri8a.pfb>
-Output written on main.pdf (2 pages, 122966 bytes).
+{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Pro
+gram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Fil
+es/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTe
+X 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/
+public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
+/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/
+Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiK
+TeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
+pe1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utm
+ri8a.pfb>
+Output written on main.pdf (3 pages, 212428 bytes).
 PDF statistics:
- 57 PDF objects out of 1000 (max. 8388607)
+ 90 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 18 words of extra memory for PDF output out of 10000 (max. 10000000)
 

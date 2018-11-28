@@ -5,7 +5,7 @@ import eval.Evaluator
 import event.Event
 import input.{InputConverter, StreamHeader}
 import pipes.rul.{PartialRulesProcessor, RulesAggregator}
-import utils.{Files, IntegerPartitioner}
+import utils.{Files, ModuloPartitioner}
 
 object VerticalRulesJob {
 
@@ -39,7 +39,7 @@ object VerticalRulesJob {
 
       val newConditionsStream = rulesUpdatesStream
         .map((e: Event) => (e, e.ruleId))
-        .partitionCustom(new IntegerPartitioner(numPartitions), 1)
+        .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
         .map(e => e)

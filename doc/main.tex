@@ -53,7 +53,6 @@
 \DeclareMathOperator*{\E}{\mathbb{E}}
 
 \begin{document}
-
 \title{Distributed Adaptive Rules with Apache Flink for Data Stream Mining -- Preliminary Work}
 
 \author{Lukasz~Korycki, Virginia Commonwealth University, USA}%
@@ -64,12 +63,12 @@
 \maketitle
 
 \begin{abstract}
-The abstract goes here.
+	The abstract goes here.
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
 \begin{IEEEkeywords}
-IEEE, IEEEtran, journal, \LaTeX, paper, template.
+	IEEE, IEEEtran, journal, \LaTeX, paper, template.
 \end{IEEEkeywords}
 
 \IEEEpeerreviewmaketitle
@@ -106,7 +105,7 @@ While the flexibility and transparency of rule-based systems are their advantage
 
 \subsection{Distributed computing}
 
-One of the possible approaches is distribution of computations across several machines. The domain of distributed computing is currently occupied mainly by algorithms implemented in one of the three frameworks: Apache Spark, Flink or Storm. While all of them aim at increasing throughput of algorithms and decreasing latency in general, they are not suitable for all specific settings that may be distinguished in data stream mining.
+One of the possible approaches is distribution of computations across several machines. The domain of distributed computing is currently occupied mainly by algorithms implemented in one of the three frameworks: Apache Spark, Flink or Storm. While all of them aim for increasing throughput of algorithms and decreasing latency in general, they are not suitable for all specific settings that may be distinguished in data stream mining.
 
 \medskip
 \begin{itemize}
@@ -122,9 +121,9 @@ One of the possible approaches is distribution of computations across several ma
 \subsection{Distributed decision rules}
 Due to the presented characteristics, it is not surprising that most of the streaming machine learning algorithms, even if few, have been implemented in Storm or Flink, mainly in SAMOA [x]. The already mentioned AMR algorithm is one of them [x]. 
 
-There two main approaches to implementing this algorithm in a distributed manner. The first one is \textbf{vertical parallelization}, in which decision rules are distributed across several partitions, so all necessary updates are performed separately for each rule. Since there is still no efficient way to distribute prediction process without creating a synchronization barrier for each instance, in vertical architecture all conditions are maintained in a single model, so only statistics for splits are distributed. 
+There two main approaches to implementing this algorithm in a distributed manner. The first one is \textbf{vertical parallelization}, in which decision rules are distributed across several partitions, so all necessary updates are performed separately for each rule. Since there is still no efficient way to distribute prediction process without creating a synchronization barrier for each instance, in vertical architecture all conditions are maintained in a single rules aggregator, so only statistics for splits are distributed. One of the most important properties of this method, that should be emphasized, is that incoming instances does not wait for updates that arrive asynchronously.
 
-The second approach is \textbf{horizontal parallelization}. In this architecture the algorithm maintains several independent rule models. It allows for processing several instances at the same time. Such approach definitely increases a throughput, however, since for each model a kind of subsampling is performed (depending on its availability) it also introduces a potential problem of undersampling. There is a third option that combines both approaches by introducing a common default rule, which propagates new rules to all models.
+The second approach is \textbf{horizontal parallelization}. In this architecture the algorithm maintains several independent rule models. It allows for processing several instances at the same time. Such approach definitely increases a throughput, however, since for each model a kind of subsampling is performed (depending on its availability), it also introduces a potential problem of undersampling. There is a third option (hybrid) that combines both approaches by introducing a common default rule, which propagates new rules to all models.
 
 The AMR algorithm has already been implemented in Storm [x]. There is also an implementation of the Hoeffding Tree in Flink. However, to the best of our knowledge, AMR has not been integrated with the latter framework.
 
@@ -143,22 +142,46 @@ In the presented implementations, due to time limitations, we do not apply anoma
 
 \subsection{Vertical parallelization}
 
+In our vertical implementation we used the following long-running operators, connections and data. We present only the most important elements. For more details, please, check the source code attached.
+
+\begin{itemize}
+	\item[--] \textot{Rules Aggregator} -- it is a \textit{ProcessFunction} that receives instances as a main input. It performs all the operations (checking coverage, classification, maintaining the default rule) except for updates of rules statistics. Requests for the updates and initialization of new rules' statistics are sent, using a \textit{SideOutput}. The operator is placed in an iteration of \textit{IterativeStream} which allows for receiving a feedback from statistics partitions.\\
+	
+	\item[--] \textot{Partial Rules Processor} -- this parallel operator is responsible for updating statistics for given rules and expanding them. If a new condition is created, it is sent to the \textot{Rules Aggregator}. The number of these operators depends on a given level of parallelism (partitions).\\
+	
+	\item[--] \textot{Modulo Partitioner} -- it is responsible for distributing rule statistics between partitions. We simply use a modulo formula based on an rule's id.
+\end{itemize}
+\medskip
+
+\begin{figure}[h]	
+	\centering
+	\includegraphics[scale=0.45]{img/vertical.pdf}	
+	\caption{The vertical parallelization.}	
+	\label{fig:vertical}
+\end{figure}
+
+\noindent Since different operators may receive different types od data, we needed to unify the data points into a common type, which is \textot{Event}.
+
 \subsection{Horizontal parallelization}
 
+To implement the horizontal parallelization we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
+
 \section{Experiments}
+
+
 \subsection{Set-up}
 \subsection{Data streams}
-\subsection{Results and discussion}
+\subsection{Results}
 
-\section{Summary and future works}
+\section{Summary}
 
 
 \begin{thebibliography}{1}
-
-\bibitem{IEEEhowto:kopka}
-H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-
+	
+	\bibitem{IEEEhowto:kopka}
+	H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+	0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+	
 \end{thebibliography}
 
 \end{document}
