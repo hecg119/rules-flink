@@ -205,59 +205,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 
 \subsection{Results}
 
-\begin{table}[h]
-	\captionsetup{name=Tab}
-	\caption{Accuracy of SAMR and \textbf{relative accuracy} when running HAMR with different numbers of partitions P.}
-	\centering
-	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
-			\toprule
-			Stream & SAMR & P=2 & P=4 & P=8 \\ 
-			\midrule
-			Electricity & 0.7187 & 0.9607 & 0.9248 & 0.8935\\
-			Covertype & 0.6220 & 0.9702 & 0.9542 & 0.9034\\
-			Weather & 0.7008 & 1.0013 & 1.0065 & 0.9891\\
-			Activity & 0.3213 & 1.0539 & 1.1270 & 1.1849\\
-			Poker & 0.5548 & 0.9682 & 0.9492 & 0.9326\\
-			Olympic & 0.8527 & 1.0002 & 1.0003 & 0.9999\\
-			Hyperplane & 0.5822 & 0.9828 & 0.9768 & 0.9564\\
-			Wine & 0.6033 & 0.9924 & 0.9970 & 0.9474\\
-			Connect4 & 0.5618 & 0.9835 & 0.9827 & 0.9930\\
-			Lymph & 0.4900 & 1.0046 & 1.0038 & 1.0004\\
-			\midrule
-			\textbf{Avg} & \textbf{0.6007} & \textbf{0.9918} & \textbf{0.9922} & \textbf{0.9801}\\
-			Std & 0.1423 & 0.0265 & 0.0545 & 0.0818\\
-			\bottomrule
-			
-	\end{tabular}}
-	\label{tab:acc_horizontal}
-\end{table}
-
-\begin{table}[h]
-	\captionsetup{name=Tab}
-	\caption{Computing time [s] for SAMR and \textbf{speedup} when running HAMR with different numbers of partitions P.}
-	\centering
-	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
-			\toprule
-			Stream & SAMR & P=2 & P=4 & P=8 \\ 
-			\midrule
-			Electricity & 7.093 & 2.2263 & 3.1595 & 4.7413\\
-			Covertype & 24.453 & 1.7980 & 3.6410 & 3.7293\\
-			Weather & 1.854 & 1.5593 & 1.7247 & 2.0108\\
-			Activity & 57.101 & 1.7665 & 2.5766 & 7.2381\\
-			Poker & 29.076 & 2.8361 & 5.0435 & 4.8452\\
-			Olympic & 154.433 & 2.7139 & 5.8209 & 11.9373\\
-			Hyperplane & 56.423 & 2.6296 & 8.2417 & 9.4369\\
-			Wine & 26.612 & 2.7805 & 3.6236 & 4.0413\\
-			Connect4 & 7.37 & 1.7370 & 2.7801 & 2.9899\\
-			Lymph & 37.565 & 2.6975 & 3.5055 & 4.1176\\
-			\midrule
-			\textbf{Avg} & \textbf{40.198} & \textbf{2.2745} & \textbf{4.0117} & \textbf{5.5088}\\
-			Std & 44.4792 & 0.5118 & 1.8947 & 3.1022\\
-			\bottomrule
-			
-	\end{tabular}}
-	\label{tab:time_horizontal}
-\end{table}
+In this section, we present results of the described evaluation. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -288,7 +236,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
-	\caption{Computing time [s] for SAMR and \textbf{speedup} when running VAMR with different numbers of partitions P.}
+	\caption{Computing time [s] for SAMR and \textbf{speed-up} when running VAMR with different numbers of partitions P.}
 	\centering
 	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
 			\toprule
@@ -313,6 +261,62 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 	\label{tab:time_vertical}
 \end{table}
 
+One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1. The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), however, it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computing time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Accuracy of SAMR and \textbf{relative accuracy} when running HAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 0.7187 & 0.9607 & 0.9248 & 0.8935\\
+			Covertype & 0.6220 & 0.9702 & 0.9542 & 0.9034\\
+			Weather & 0.7008 & 1.0013 & 1.0065 & 0.9891\\
+			Activity & 0.3213 & 1.0539 & 1.1270 & 1.1849\\
+			Poker & 0.5548 & 0.9682 & 0.9492 & 0.9326\\
+			Olympic & 0.8527 & 1.0002 & 1.0003 & 0.9999\\
+			Hyperplane & 0.5822 & 0.9828 & 0.9768 & 0.9564\\
+			Wine & 0.6033 & 0.9924 & 0.9970 & 0.9474\\
+			Connect4 & 0.5618 & 0.9835 & 0.9827 & 0.9930\\
+			Lymph & 0.4900 & 1.0046 & 1.0038 & 1.0004\\
+			\midrule
+			\textbf{Avg} & \textbf{0.6007} & \textbf{0.9918} & \textbf{0.9922} & \textbf{0.9801}\\
+			Std & 0.1423 & 0.0265 & 0.0545 & 0.0818\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:acc_horizontal}
+\end{table}
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Computing time [s] for SAMR and \textbf{speed-up} when running HAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 7.093 & 2.2263 & 3.1595 & 4.7413\\
+			Covertype & 24.453 & 1.7980 & 3.6410 & 3.7293\\
+			Weather & 1.854 & 1.5593 & 1.7247 & 2.0108\\
+			Activity & 57.101 & 1.7665 & 2.5766 & 7.2381\\
+			Poker & 29.076 & 2.8361 & 5.0435 & 4.8452\\
+			Olympic & 154.433 & 2.7139 & 5.8209 & 11.9373\\
+			Hyperplane & 56.423 & 2.6296 & 8.2417 & 9.4369\\
+			Wine & 26.612 & 2.7805 & 3.6236 & 4.0413\\
+			Connect4 & 7.37 & 1.7370 & 2.7801 & 2.9899\\
+			Lymph & 37.565 & 2.6975 & 3.5055 & 4.1176\\
+			\midrule
+			\textbf{Avg} & \textbf{40.198} & \textbf{2.2745} & \textbf{4.0117} & \textbf{5.5088}\\
+			Std & 44.4792 & 0.5118 & 1.8947 & 3.1022\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:time_horizontal}
+\end{table}
+
 \begin{figure}[h]
 	\centering
 		\begin{tikzpicture}
@@ -326,7 +330,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 		ymax=2.8,
 		ytick={0.9,1.2,1.5,1.8,2.1,2.4,2.7},
 		ymajorgrids=true,
-		ylabel={$G(Speedup\cdot Acc)$},
+		ylabel={$G(Speed\cdot Acc)$},
 		ylabel near ticks,
 		y tick label style={font=\scriptsize},
 		extra y tick labels={},
@@ -370,7 +374,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 	
 	\hspace*{0.4cm}
 	\vspace*{-2mm}
-	\caption{Geometric mean of speed and relative accuracy for VAMR and HAMR.}
+	\caption{Geometric mean of speed-up (Speed) and relative accuracy (Acc) for VAMR and HAMR.}
 	\label{fig:gmean_ratio}
 \end{figure}
 

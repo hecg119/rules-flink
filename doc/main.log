@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 05:08
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 05:45
 entering extended mode
 **./main.tex
 (main.tex
@@ -910,33 +910,15 @@ Overfull \hbox (1.77089pt too wide) in paragraph at lines 198--198
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 231--231
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 233--233
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 258--258
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 260--260
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
-
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 285--285
-[]|\OT1/ptm/m/n/8 Hyperplane| 
- []
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 312--312
-[]|\OT1/ptm/m/n/8 Hyperplane| 
- []
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-Missing character: There is no ; in font nullfont!
-Missing character: There is no ; in font nullfont!
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -944,28 +926,47 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 pdfTeX warning: pdflatex.exe (file ./img/vertical.pdf): PDF inclusion: invalid 
 other resource which is no dict (key 'ProcSets', type <array>); ignored.
->] [4] (main.aux) ) 
+>]
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 289--289
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 316--316
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+Missing character: There is no ; in font nullfont!
+Missing character: There is no ; in font nullfont!
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4]
+(main.aux) ) 
 Here is how much of TeX's memory you used:
  25898 strings out of 493312
  653599 string characters out of 3138899
- 857038 words of memory out of 3000000
+ 854943 words of memory out of 3000000
  28995 multiletter control sequences out of 15000+200000
  50827 words of font info for 102 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
- 62i,19n,107p,1143b,2253s stack positions out of 5000i,500n,10000p,200000b,80000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:
-/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program
- Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/M
-iKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9
-/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
-pe1/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public
-/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfont
-s/cm/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb>
-<C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files
-/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/font
-s/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times
-/utmri8a.pfb>
-Output written on main.pdf (4 pages, 225204 bytes).
+ 62i,19n,107p,1157b,2253s stack positions out of 5000i,500n,10000p,200000b,80000s
+{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Progra
+m Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/
+MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX 2
+.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fonts/
+type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/pub
+lic/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
+sy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Pro
+gram Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX
+ 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1
+/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8
+a.pfb>
+Output written on main.pdf (4 pages, 226243 bytes).
 PDF statistics:
  93 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
