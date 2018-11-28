@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 07:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 07:47
 entering extended mode
 **./main.tex
 (main.tex
@@ -869,12 +869,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 149--150
 
  []
 
-<img/vertical.pdf, id=23, pagebox=cropbox, 437.635pt x 373.395pt>
+<img/vertical.pdf, id=23, pagebox=cropbox, 439.6425pt x 377.41pt>
 File: img/vertical.pdf Graphic file (type pdf)
 <use img/vertical.pdf>
 Package pdftex.def Info: img/vertical.pdf  used on input line 157. on input lin
 e 157.
-Package pdftex.def Info: Requested size: 196.93393pt x 168.0262pt on input line
+Package pdftex.def Info: Requested size: 197.8373pt x 169.83292pt on input line
  157.
 
 Overfull \hbox (3.38681pt too wide) in paragraph at lines 196--196
@@ -965,7 +965,7 @@ blic/amsfonts/cm/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier
 rogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiK
 TeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
 e1/urw/times/utmri8a.pfb>
-Output written on main.pdf (5 pages, 237411 bytes).
+Output written on main.pdf (5 pages, 237581 bytes).
 PDF statistics:
  96 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
