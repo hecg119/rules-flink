@@ -1,6 +1,10 @@
 # rules-flink
 
-Build: `mvn clean package`
+Build: 
+
+- change mainClass in _pom.xml_ to HorizontalRulesJob or VerticalRulesJob
+
+- then: `mvn clean package`
 
 Run: 
 

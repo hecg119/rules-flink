@@ -129,7 +129,7 @@ The AMR algorithm has already been implemented in Storm \cite{Vu:2014}. There is
 The proposed implementations of distributed adaptive rules in Flink are based on the original AMR and the two architectures mentioned in the previous section.
 
 \subsection{Sequential}
-The sequential version (\textot{SAMR}) of the algorithm is almost the same as the original one \cite{Gama:2011}. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (the Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
+The sequential version (SAMR) of the algorithm is almost the same as the original one \cite{Gama:2011}. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (the Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
 
 If none of the rules covers and incoming instance, statistics for the default rule are updated and under the same circumstances, an expansion is attempted. If the rule received a condition, it is added to the set of maintained rules and a new default rule is created.
 
@@ -139,7 +139,7 @@ In the presented implementations, due to time limitations, we do not apply anoma
 
 \subsection{Vertical parallelization}
 
-In our vertical implementation (\textot{VAMR}) we used the following long-running operators, connections and data. We present only the most important elements. The core of the architecture is given in Fig. \ref{fig:vertical}. For more details, please, check the source code attached.
+In our vertical implementation (VAMR) we used the following long-running operators, connections and data. We present only the most important elements. The core of the architecture is given in Fig. \ref{fig:vertical}. For more details, please, check the source code attached.
 
 \medskip
 \begin{itemize}
@@ -162,7 +162,7 @@ In our vertical implementation (\textot{VAMR}) we used the following long-runnin
 
 \subsection{Horizontal parallelization}
 
-To implement the horizontal parallelization (\textot{HAMR}) we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
+To implement the horizontal parallelization (HAMR) we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
 
 \section{Experiments}
 
@@ -201,7 +201,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 
 \subsection{Results}
 
-\noindent\textbf{SAMR}. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). However, one should notice that our implementation still lacks of a few improvements that should be added, for example, handling nominal attributes explicitly, removing outdated rules or filtering anomalies. The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
+\noindent\textbf{SAMR}. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). However, one should notice that our implementation still lacks of a few improvements that should be added, for example, handling nominal attributes explicitly, removing outdated rules or filtering anomalies. Therefore, it does not have to be our main concern at this point. The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -258,10 +258,10 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 \end{table}
 
 \medskip
-\noindent\textbf{VAMR}. One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1. The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), however, it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computing time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
+\noindent\textbf{VAMR}. One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1 (Tab. \ref{tab:acc_vertical}, higher is better) The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), but it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased the variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computation time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
 
 \medskip
-\noindent\textbf{HAMR}. Much more encouraging results have been obtained for the horizontal parallelization. One can clearly see that HAMR was able to provide significant speed-ups (increasing more less directly proportionally to number of partitions for P=2 and P=4) while keeping accuracy on a similar level as SAMR. The average loss was about 0.01-0.02 with standard deviation between 0.02-0.08 that was increasing with the number of partitions, being elevated mainly by results for one data stream: Activity (1.05-1.18).
+\noindent\textbf{HAMR}. Much more encouraging results have been obtained for the horizontal parallelization. One can clearly see that HAMR was able to provide significant speed-ups (increasing more less directly proportionally to number of partitions for P=2 and P=4), while keeping accuracy on a similar level as SAMR. The average loss was about 0.01-0.02 with standard deviation between 0.02-0.08 that was increasing with the number of partitions, being elevated mainly by results for one data stream: Activity (1.05-1.18).
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -290,7 +290,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 	\label{tab:acc_horizontal}
 \end{table}
 
-The algorithm was also able to slightly improve results in 3 other cases. It is an important observation, since it indicates that the ensemble of completely independent classifiers (regarding both training and prediction) may be sufficient enough while increasing throughput at the same time. To decide if the impact of such approach is meaningful, we would need to compare results with a single classifier that imply omit some instances.
+The algorithm was also able to slightly improve results in 3 other cases. It is an important observation, since it indicates that the ensemble of completely independent classifiers (regarding both training and prediction) may be sufficient enough, while increasing throughput at the same time. To decide if the impact of such approach is meaningful, we would need to compare results with a single classifier that simply omit some instances.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -319,7 +319,7 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 \end{table}
 
 \medskip
-\noindent\textbf{Conclusion}. Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR. In the former case, it is possible that the rate of incoming updates is too slow compared with the rate of incoming instances. Increasing the number of partitions even more, may boost the performance of this method. On the other hand, HAMR keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even more improvements \cite{Vu:2014}. 
+\noindent\textbf{Conclusion}. Finally, we can conclude that the horizontal parallelization provides better relation between the accuracy relative to the sequential algorithm and the obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR. In the former case, it is possible that the rate of incoming updates is too slow compared with the rate of incoming instances. Increasing the number of partitions even more, may boost the performance of this method. On the other hand, HAMR keeps accuracy on a relatively stable level, while providing significant speed-ups. It is possible that connecting both methods may lead to even more improvements \cite{Vu:2014}. 
 
 \begin{figure}[h]
 	\centering
@@ -388,7 +388,7 @@ However, one must keep in mind that all the presented results were obtained on a
 
 In the presented work, we introduced our implementation of the distributed ARM classifier in Apache Flink, using two previously established general architectures -- vertical and horizontal. We evaluated VAMR and HAMR on a set of well-known data streams, using different numbers of parallel partitions. The obtained results suggest that the horizontal version better exploits increased resources in terms of maintaining a sufficient accuracy and providing a speed-up.
 
-We treat this work as a preliminary one. In the nearest future, we plan to improve the existing solutions, aiming for increasing both the quality of classification and throughput. An increased number of distributed partitions may give us an opportunity to perform additional optimization steps independently from the main flow. In addition, since rules can be easily interpreted, once we obtain reliable predictions in a reasonable time, we may attempt to analyze how rules are changing for some data streams -- that may lead to some indirect observations about the dynamics of these streams and that knowledge could be utilized in subsequent projects.
+We treat this work as a preliminary one. In the nearest future, we plan to improve the existing solutions, aiming for increasing both the quality of classification and throughput. An increased number of distributed partitions may give us an opportunity to perform, independently from the main flow, additional optimization steps. In addition, since rules can be easily interpreted, once we obtain reliable predictions in a reasonable time, we may attempt to analyze how rules are changing for some data streams -- that may lead to some indirect observations about the dynamics of these streams and the knowledge could be utilized in subsequent projects.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,references}
