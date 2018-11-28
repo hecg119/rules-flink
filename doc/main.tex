@@ -85,12 +85,12 @@ In this work, we introduce an implementation of adaptive rules for data stream m
 
 \section{Distributed adaptive rules}
 
-While there are plenty of machine learning algorithms dedicated for data stream mining, like Hoeffding Trees [x] and Oza's ensembles [x], only few of them provide human-readable forms of models. This may be a significant problem in such domains as medicine or economy, in which automatic decisions should be properly explained.
+While there are plenty of machine learning algorithms dedicated for data stream mining, like Hoeffding Trees \cite{Domingos:2000} and Oza's ensembles \cite{OzaR:2001}, only few of them provide human-readable forms of models. This may be a significant problem in such domains as medicine or economy, in which automatic decisions should be properly explained.
 
 \subsection{Rule-based models}
 Rule-based algorithms and decision tress are the most suitable in such cases. While the latter are known to be very efficient in terms of computing time, the former is considered the most flexible due to modularity of decision rules.
 
-One of the most popular classifiers based on rules is Adaptive Model Rules (AMR) proposed in [x]. It is an online model that incorporate knowledge from new instances by expanding its rules based on the widely used Hoeffding bound criterion [x]:
+One of the most popular classifiers based on rules is Adaptive Model Rules (AMR) proposed in \cite{Gama:2011}. It is an online model that incorporate knowledge from new instances by expanding its rules based on the widely used Hoeffding bound criterion \cite{Domingos:2000}:
 
 \begin{equation}
 \label{eq:hbound}
@@ -99,7 +99,7 @@ One of the most popular classifiers based on rules is Adaptive Model Rules (AMR)
 
 \noindent where $R$ is a value range, $n_l$ is a number of examples seen on a node $l$ and $\delta$ is a confidence parameter. If a difference between two best attributes on the node is greater than $\epsilon$, then there is a $1-\delta$ confidence that the better attribute introduces superior information gain and it should be used to create a split.
 
-While the flexibility and transparency of rule-based systems are their advantages, a high computational complexity is considered as one of the main drawbacks. Fortunately, since the models are modular, there is a lot of possibilities to improve their performance using parallelization techniques.
+While the flexibility and transparency of rule-based systems are their advantages, a high computational complexity is considered as one of the main drawbacks. Fortunately, since the models are modular, there is a lot of possibilities to improve their performance using parallelization techniques \cite{Cano:2018}.
 
 \subsection{Distributed computing}
 
@@ -117,24 +117,24 @@ One of the possible approaches is distribution of computations across several ma
 \end{itemize}
 
 \subsection{Distributed decision rules}
-Due to the presented characteristics, it is not surprising that most of the streaming machine learning algorithms, even if few, have been implemented in Storm or Flink, mainly in SAMOA [x]. The already mentioned AMR algorithm is one of them [x]. 
+Due to the presented characteristics, it is not surprising that most of the streaming machine learning algorithms, even if few, have been implemented in Storm or Flink, mainly in SAMOA \cite{Morales:2013}. The already mentioned AMR algorithm is one of them \cite{Vu:2014}. 
 
 There two main approaches to implementing this algorithm in a distributed manner. The first one is \textbf{vertical parallelization}, in which decision rules are distributed across several partitions, so all necessary updates are performed separately for each rule. Since there is still no efficient way to distribute prediction process without creating a synchronization barrier for each instance, in vertical architecture all conditions are maintained in a single rules aggregator, so only statistics for splits are distributed. One of the most important properties of this method, that should be emphasized, is that incoming instances does not wait for updates that arrive asynchronously.
 
 The second approach is \textbf{horizontal parallelization}. In this architecture the algorithm maintains several independent rule models. It allows for processing several instances at the same time. Such approach definitely increases a throughput, however, since for each model a kind of subsampling is performed (depending on its availability), it also introduces a potential problem of undersampling. There is a third option (hybrid) that combines both approaches by introducing a common default rule, which propagates new rules to all models.
 
-The AMR algorithm has already been implemented in Storm [x]. There is also an implementation of the Hoeffding Tree in Flink. However, to the best of our knowledge, AMR has not been integrated with the latter framework.
+The AMR algorithm has already been implemented in Storm \cite{Vu:2014}. There is also an implementation of the ensemble of Hoeffding Trees in Flink \cite{Vasiloudis:2017}. However, to the best of our knowledge, AMR has not been integrated with the latter framework.
 
 \section{Proposed implementations}
 
 The proposed implementations of distributed adaptive rules in Flink are based on the original AMR and the two architectures mentioned in the previous section.
 
 \subsection{Sequential}
-The sequential version (\textot{SAMR}) of the algorithm's learning is almost the same as the original one [x]. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
+The sequential version (\textot{SAMR}) of the algorithm's learning is almost the same as the original one \cite{Gama:2011}. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (the Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
 
 If no rule covers and incoming instance, statistics for the default rule are updated and under the same circumstances, an expansion is attempted. If the rule received a condition, it is added to the set of maintained rules and a new default rule is created.
 
-One of the crucial parts of the learning process is an approach to looking for the best split. The naive method that keeps the whole information about instances and analyzes possible bins sequentially, while calculating entropies, consumes a lot of time and memory. Some improvements are possible, like for example, utilizing a binary tree to optimize the searching [x]. However, to the best of our knowledge, the best solution, which can be also easily integrated with distributed architectures, is estimating the required class counters, using Gaussian distributions [x]. In such approach only a mean, standard deviation, counters, minimal and maximal attributes values have to be maintained. All of them can be calculated incrementally in an efficient way [x].
+One of the crucial parts of the learning process is an approach to looking for the best split. The naive method that keeps the whole information about instances and analyzes possible bins sequentially, while calculating entropies, consumes a lot of time and memory. Some improvements are possible, like for example, utilizing a binary tree to optimize the searching \cite{Gama:2003}. However, to the best of our knowledge, the best solution, which can be also easily integrated with distributed architectures, is estimating the required class counters, using Gaussian distributions \cite{Pfahringer:2008}. In such approach only a mean, standard deviation, counters, minimal and maximal attributes values have to be maintained. All of them can be calculated incrementally in an efficient way.
 
 In the presented implementations, due to time limitations, we do not apply anomaly test nor removal of underperforming rules. This is the only different compared with the original algorithm, which, however, may be significant in the case of drifting data streams.
 
@@ -203,7 +203,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 
 \subsection{Results}
 
-\noindent\textbf{SAMR}. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
+\noindent\textbf{SAMR}. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). However, one should notice that our implementation still lacks of a few improvements that should be added, for example, handling nominal attributes explicitly, removing outdated rules or filtering anomalies. The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -322,7 +322,7 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 \end{table}
 
 \medskip
-\noindent\textbf{Conclusion}. Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR. In the former case, it is possible that the rate of incoming updates is too slow compared with the rate of incoming instances. Increasing the number of partitions even more, may boost the performance of this method. On the other hand, HAMR keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even more improvements [x]. 
+\noindent\textbf{Conclusion}. Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR. In the former case, it is possible that the rate of incoming updates is too slow compared with the rate of incoming instances. Increasing the number of partitions even more, may boost the performance of this method. On the other hand, HAMR keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even more improvements \cite{Vu:2014}. 
 
 \begin{figure}[h]
 	\centering
@@ -393,13 +393,8 @@ In the presented work, we introduced our implementation of the distributed ARM c
 
 We treat this work as a preliminary one. In the nearest future, we plan to improve the existing solutions, aiming for increasing both the quality of classification and throughput. An increased number of distributed partitions may give us an opportunity to perform additional optimization steps independently from the main flow. In addition, since rules can be easily interpreted, once we obtain reliable predictions in a reasonable time, we may attempt to analyze how rules are changing for some data streams -- that may lead to some indirect observations about the dynamics of these streams and that knowledge could be utilized in subsequent projects.
 
-\begin{thebibliography}{1}
-	
-	\bibitem{IEEEhowto:kopka}
-	H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-	0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-	
-\end{thebibliography}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,references}
 
 \end{document}
 
