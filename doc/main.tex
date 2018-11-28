@@ -132,7 +132,7 @@ The AMR algorithm has already been implemented in Storm [x]. There is also an im
 The proposed implementations of distributed adaptive rules in Flink are based on the original AMR and the two architectures mentioned in the previous section.
 
 \subsection{Sequential}
-The sequential version of the algorithm's learning is given in Algorithm 1 is almost the same as the original one [x]. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
+The sequential version (\textot{SAMR}) of the algorithm's learning is almost the same as the original one [x]. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
 
 If no rule covers and incoming instance, statistics for the default rule are updated and under the same circumstances, an expansion is attempted. If the rule received a condition, it is added to the set of maintained rules and a new default rule is created.
 
@@ -142,8 +142,9 @@ In the presented implementations, due to time limitations, we do not apply anoma
 
 \subsection{Vertical parallelization}
 
-In our vertical implementation we used the following long-running operators, connections and data. We present only the most important elements. For more details, please, check the source code attached.
+In our vertical implementation (\textot{VAMR}) we used the following long-running operators, connections and data. We present only the most important elements. For more details, please, check the source code attached.
 
+\medskip
 \begin{itemize}
 	\item[--] \textot{Rules Aggregator} -- it is a \textit{ProcessFunction} that receives instances as a main input. It performs all the operations (checking coverage, classification, maintaining the default rule) except for updates of rules statistics. Requests for the updates and initialization of new rules' statistics are sent, using a \textit{SideOutput}. The operator is placed in an iteration of \textit{IterativeStream} which allows for receiving a feedback from statistics partitions.\\
 	
@@ -164,14 +165,153 @@ In our vertical implementation we used the following long-running operators, con
 
 \subsection{Horizontal parallelization}
 
-To implement the horizontal parallelization we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
+To implement the horizontal parallelization (\textot{HAMR}) we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
 
 \section{Experiments}
 
+In the experimental section, we evaluated our implementations of the distributed AMR, using different data streams and levels of parallelism. We compared them with the sequential version of the algorithm.
+
+\subsection{Data streams}
+
+During the experiments, we used 10 different data streams (7 real and 3 synthetic). Most of them are supposed to be non-stationary. They are summarized in the Tab. \ref{tab:data}.
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Summary of the used data streams.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1.5cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{2.5cm}}	
+			\toprule
+			Name & Instances & Attributes & Classes & Type \\ 
+			\midrule
+			ActivityRaw & 1 048 570 & 3 & 6 & Real \\
+			Connect4 & 67 557 & 42 & 3 & Real \\
+			Covertype & 581 012 & 54 & 7 & Real \\
+			Electricity & 45 312 & 8 & 2 & Real \\
+			Hyperplane & 1 000 000 & 15 & 5 & Synthetic \\
+			Lymph & 1 000 000 & 18 & 5 & Synthetic \\
+			Olympic & 271 116 & 7 & 3 & Real \\
+			Poker & 829 201 & 10 & 10 & Real \\
+			Weather & 18 159 & 8 & 2 & Real \\
+			Wine & 1 000 000 & 13 & 3 & Synthetic \\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:data}
+\end{table}
 
 \subsection{Set-up}
-\subsection{Data streams}
+
+The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine. We adjusted the minimum number $N_{min}$ of instances for expanding a rule, depending on a size of a stream (100 or 1000). The confidence parameter $\delta$ was equal to 0.05. For each setting we measured accuracy over a whole data stream, as well as time spent on computations.
+
 \subsection{Results}
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Accuracy of SAMR and relative accuracy when running HAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 0.7187 & 0.9607 & 0.9248 & 0.8935\\
+			Covertype & 0.6220 & 0.9702 & 0.9542 & 0.9034\\
+			Weather & 0.7008 & 1.0013 & 1.0065 & 0.9891\\
+			Activity & 0.3213 & 1.0539 & 1.1270 & 1.1849\\
+			Poker & 0.5548 & 0.9682 & 0.9492 & 0.9326\\
+			Olympic & 0.8527 & 1.0002 & 1.0003 & 0.9999\\
+			Hyperplane & 0.5822 & 0.9828 & 0.9768 & 0.9564\\
+			Wine & 0.6033 & 0.9924 & 0.9970 & 0.9474\\
+			Connect4 & 0.5618 & 0.9835 & 0.9827 & 0.9930\\
+			Lymph & 0.4900 & 1.0046 & 1.0038 & 1.0004\\
+			\midrule
+			\textbf{Avg} & \textbf{0.6007} & \textbf{0.9918} & \textbf{0.9922} & \textbf{0.9801}\\
+			Std & 0.1423 & 0.0265 & 0.0545 & 0.0818\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:acc_horizontal}
+\end{table}
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Computing time [s] for SAMR and speedup when running HAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 7.093 & 2.2263 & 3.1595 & 4.7413\\
+			Covertype & 24.453 & 1.7980 & 3.6410 & 3.7293\\
+			Weather & 1.854 & 1.5593 & 1.7247 & 2.0108\\
+			Activity & 57.101 & 1.7665 & 2.5766 & 7.2381\\
+			Poker & 29.076 & 2.8361 & 5.0435 & 4.8452\\
+			Olympic & 154.433 & 2.7139 & 5.8209 & 11.9373\\
+			Hyperplane & 56.423 & 2.6296 & 8.2417 & 9.4369\\
+			Wine & 26.612 & 2.7805 & 3.6236 & 4.0413\\
+			Connect4 & 7.37 & 1.7370 & 2.7801 & 2.9899\\
+			Lymph & 37.565 & 2.6975 & 3.5055 & 4.1176\\
+			\midrule
+			\textbf{Avg} & \textbf{40.198} & \textbf{2.2745} & \textbf{4.0117} & \textbf{5.5088}\\
+			Std & 44.4792 & 0.5118 & 1.8947 & 3.1022\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:time_horizontal}
+\end{table}
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Accuracy of SAMR and relative accuracy when running VAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=1 & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 0.7187 & 0.7154 & 0.6943 & 0.7180 & 0.6274\\
+			Covertype & 0.6220 & 0.9590 & 0.8640 & 0.8524 & 0.9214\\
+			Weather & 0.7008 & 0.9288 & 0.9793 & 0.9654 & 0.9793\\
+			Activity & 0.3213 & 1.0459 & 1.0841 & 0.9470 & 1.1316\\
+			Poker & 0.5548 & 0.8940 & 0.8694 & 0.9234 & 0.9355\\
+			Olympic & 0.8527 & 0.9699 & 1.0007 & 0.9966 & 0.9924\\
+			Hyperplane & 0.5822 & 1.0199 & 1.0096 & 1.0137 & 1.0228\\
+			Wine & 0.6033 & 0.9106 & 0.9151 & 0.9036 & 0.9226\\
+			Connect4 & 0.5618 & 0.9606 & 0.9310 & 1.0028 & 0.9976\\
+			Lymph & 0.4900 & 1.0795 & 1.0637 & 1.0717 & 1.0853\\
+			\midrule
+			Avg & \textbf{0.6007} & \textbf{0.9484} & \textbf{0.9411} & \textbf{0.9394} & \textbf{0.9616}\\
+			Std & 0.1423 & 0.1009 & 0.1145 & 0.0995 & 0.1358\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:acc_vertical}
+\end{table}
+
+\begin{table}[h]
+	\captionsetup{name=Tab}
+	\caption{Computing time [s] for SAMR and speedup when running VAMR with different numbers of partitions P.}
+	\centering
+	\scalebox{1.0}{\begin{tabular}[H]{m{1.25cm} >{\centering\arraybackslash} m{1cm} | >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm} >{\centering\arraybackslash} m{1cm}}	
+			\toprule
+			Stream & SAMR & P=1 & P=2 & P=4 & P=8 \\ 
+			\midrule
+			Electricity & 7.093 & 2.9070 & 3.9449 & 4.1946 & 4.0741\\
+			Covertype & 24.453 & 1.0529 & 1.7989 & 2.3445 & 1.1923\\
+			Weather & 1.854 & 1.6052 & 1.2493 & 1.0779 & 1.5725\\
+			Activity & 57.101 & 2.3569 & 2.0596 & 2.6571 & 2.8897\\
+			Poker & 29.076 & 2.7821 & 2.5237 & 0.9990 & 0.7239\\
+			Olympic & 154.433 & 8.0104 & 11.9957 & 15.6103 & 18.7760\\
+			Hyperplane & 56.423 & 2.5391 & 3.3036 & 5.2219 & 4.9093\\
+			Wine & 26.612 & 1.0858 & 1.1218 & 0.9124 & 1.0133\\
+			Connect4 & 7.37 & 0.7683 & 0.9750 & 0.9833 & 1.0824\\
+			Lymph & 37.565 & 1.5611 & 1.6192 & 0.8845 & 1.4584\\
+			\midrule
+			\textbf{Avg} & \textbf{40.198} & \textbf{2.4669} & \textbf{3.0592} & \textbf{3.4886} & \textbf{3.7692}\\
+			Std & 42.1967 & 2.0922 & 3.2834 & 4.5233 & 5.4596\\
+			\bottomrule
+			
+	\end{tabular}}
+	\label{tab:time_vertical}
+\end{table}
 
 \section{Summary}
 

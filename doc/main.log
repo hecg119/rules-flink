@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 02:34
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 04:22
 entering extended mode
 **./main.tex
 (main.tex
@@ -855,62 +855,116 @@ Underfull \hbox (badness 10000) in paragraph at lines 115--117
 
  []
 
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 148.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 135.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\ot1pcr.fd"
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-Underfull \hbox (badness 10000) in paragraph at lines 148--149
+Underfull \hbox (badness 10000) in paragraph at lines 149--150
 
  []
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 150--151
+Underfull \hbox (badness 10000) in paragraph at lines 151--152
 
  []
 
 <img/vertical.pdf, id=23, pagebox=cropbox, 437.635pt x 373.395pt>
 File: img/vertical.pdf Graphic file (type pdf)
 <use img/vertical.pdf>
-Package pdftex.def Info: img/vertical.pdf  used on input line 158. on input lin
-e 158.
+Package pdftex.def Info: img/vertical.pdf  used on input line 159. on input lin
+e 159.
 Package pdftex.def Info: Requested size: 196.93393pt x 168.0262pt on input line
- 158.
+ 159.
 
-Underfull \hbox (badness 3168) in paragraph at lines 167--168
-[]\OT1/ptm/m/n/10 To im-ple-ment the hor-i-zon-tal par-al-leliza-tion we sim-
+Overfull \hbox (3.38681pt too wide) in paragraph at lines 198--198
+ []|\OT1/ptm/m/n/8 Attributes| 
  []
 
-[3
 
- <./img/vertical.pdf
+Overfull \hbox (5.00163pt too wide) in paragraph at lines 198--198
+[]|\OT1/ptm/m/n/8 ActivityRaw| 
+ []
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 198--198
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 198--198
+ []|\OT1/ptm/m/n/8 Synthetic| 
+ []
+
+
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 198--198
+ []|\OT1/ptm/m/n/8 Synthetic| 
+ []
+
+
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 198--198
+ []|\OT1/ptm/m/n/8 Synthetic| 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 231--231
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 258--258
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 285--285
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 312--312
+[]|\OT1/ptm/m/n/8 Hyperplane| 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[3 <./img/vertical.pdf
 
 pdfTeX warning: pdflatex.exe (file ./img/vertical.pdf): PDF inclusion: invalid 
 other resource which is no dict (key 'ProcSets', type <array>); ignored.
->] (main.aux) ) 
+>] [4
+
+] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 25473 strings out of 493312
- 641271 string characters out of 3138899
- 799783 words of memory out of 3000000
- 28571 multiletter control sequences out of 15000+200000
- 49720 words of font info for 101 fonts, out of 3000000 for 9000
+ 25481 strings out of 493312
+ 641388 string characters out of 3138899
+ 842827 words of memory out of 3000000
+ 28578 multiletter control sequences out of 15000+200000
+ 50827 words of font info for 102 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
- 62i,9n,96p,1143b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Pro
-gram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Fil
-es/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTe
-X 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/
-public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/ams
-fonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
-/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/
-Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiK
-TeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/ty
-pe1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utm
-ri8a.pfb>
-Output written on main.pdf (3 pages, 212428 bytes).
+ 62i,12n,96p,1143b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
+{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Prog
+ram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program File
+s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX
+ 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2.9/font
+s/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/p
+ublic/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsf
+onts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/
+cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/P
+rogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKT
+eX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
+e1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr
+i8a.pfb>
+Output written on main.pdf (4 pages, 219143 bytes).
 PDF statistics:
- 90 PDF objects out of 1000 (max. 8388607)
+ 93 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  18 words of extra memory for PDF output out of 10000 (max. 10000000)
 
