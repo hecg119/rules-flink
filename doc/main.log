@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 08:34
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 08:53
 entering extended mode
 **./main.tex
 (main.tex
@@ -874,11 +874,6 @@ Overfull \hbox (3.38681pt too wide) in paragraph at lines 194--194
  []
 
 
-Overfull \hbox (5.00163pt too wide) in paragraph at lines 194--194
-[]|\OT1/ptm/m/n/8 ActivityRaw| 
- []
-
-
 Overfull \hbox (1.7538pt too wide) in paragraph at lines 194--194
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
@@ -940,7 +935,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 Here is how much of TeX's memory you used:
  25901 strings out of 493312
  653729 string characters out of 3138899
- 851635 words of memory out of 3000000
+ 851690 words of memory out of 3000000
  29001 multiletter control sequences out of 15000+200000
  45972 words of font info for 92 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
@@ -957,7 +952,7 @@ blic/amsfonts/cm/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier
 rogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiK
 TeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
 e1/urw/times/utmri8a.pfb>
-Output written on main.pdf (5 pages, 237101 bytes).
+Output written on main.pdf (5 pages, 237197 bytes).
 PDF statistics:
  96 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

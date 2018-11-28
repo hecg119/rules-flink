@@ -129,25 +129,25 @@ The AMR algorithm has already been implemented in Storm \cite{Vu:2014}. There is
 The proposed implementations of distributed adaptive rules in Flink are based on the original AMR and the two architectures mentioned in the previous section.
 
 \subsection{Sequential}
-The sequential version (\textot{SAMR}) of the algorithm's learning is almost the same as the original one \cite{Gama:2011}. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (the Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
+The sequential version (\textot{SAMR}) of the algorithm is almost the same as the original one \cite{Gama:2011}. For each incoming instance statistics are updated for all rules that covers it. If a sufficient number $N_{min}$ of instances was registered for a rule, the algorithm tries to expand the rule by looking for an attribute for which an effective split of classes can be established. For this purpose an entropy is calculated. If the value for the best possible split is significantly greater (the Hoeffding bound) than a current rule's entropy, a new condition based on the split value is added to the rule and statistics are released.
 
-If no rule covers and incoming instance, statistics for the default rule are updated and under the same circumstances, an expansion is attempted. If the rule received a condition, it is added to the set of maintained rules and a new default rule is created.
+If none of the rules covers and incoming instance, statistics for the default rule are updated and under the same circumstances, an expansion is attempted. If the rule received a condition, it is added to the set of maintained rules and a new default rule is created.
 
-One of the crucial parts of the learning process is an approach to looking for the best split. The naive method that keeps the whole information about instances and analyzes possible bins sequentially, while calculating entropies, consumes a lot of time and memory. Some improvements are possible, like for example, utilizing a binary tree to optimize the searching \cite{Gama:2003}. However, to the best of our knowledge, the best solution, which can be also easily integrated with distributed architectures, is estimating the required class counters, using Gaussian distributions \cite{Pfahringer:2008}. In such approach only a mean, standard deviation, counters, minimal and maximal attributes values have to be maintained. All of them can be calculated incrementally in an efficient way.
+One of the crucial parts of the learning process is an approach to looking for the best split. The naive method that keeps the whole information about instances and analyzes possible bins sequentially, while calculating entropies, consumes a lot of time and memory. Some improvements are possible, like for example, utilizing a binary tree to optimize the searching \cite{Gama:2003}. To the best of our knowledge, the most efficient solution, which can be also easily integrated with distributed architectures, is estimating the required class counters, using Gaussian distributions \cite{Pfahringer:2008}. In such approach only a mean, standard deviation, counters, minimal and maximal attributes' values have to be maintained. All of them can be calculated incrementally in an efficient way.
 
-In the presented implementations, due to time limitations, we do not apply anomaly test nor removal of underperforming rules. This is the only different compared with the original algorithm, which, however, may be significant in the case of drifting data streams.
+In the presented implementations, due to time limitations, we do not apply anomaly test nor removal of underperforming rules. This is the only difference compared with the original algorithm, which, however, may be significant in the case of drifting data streams.
 
 \subsection{Vertical parallelization}
 
-In our vertical implementation (\textot{VAMR}) we used the following long-running operators, connections and data. We present only the most important elements. For more details, please, check the source code attached.
+In our vertical implementation (\textot{VAMR}) we used the following long-running operators, connections and data. We present only the most important elements. The core of the architecture is given in Fig. \ref{fig:vertical}. For more details, please, check the source code attached.
 
 \medskip
 \begin{itemize}
-	\item[--] \textot{Rules Aggregator} -- it is a \textit{ProcessFunction} that receives instances as a main input. It performs all the operations (checking coverage, classification, maintaining the default rule) except for updates of rules statistics. Requests for the updates and initialization of new rules' statistics are sent, using a \textit{SideOutput}. The operator is placed in an iteration of \textit{IterativeStream} which allows for receiving a feedback from statistics partitions.\\
+	\item[--] \textot{Rules Aggregator} -- it is a \textit{ProcessFunction} that receives instances as a main input. It performs all the operations (checking coverage, classifying, maintaining the default rule) except for updates of rules statistics. Requests for the updates and initialization of new rules' statistics are sent, using a \textit{SideOutput}. The operator is placed in an iteration of \textit{IterativeStream}, which allows for receiving a feedback from the partitions with statistics.\\
 	
 	\item[--] \textot{Partial Rules Processor} -- this parallel operator is responsible for updating statistics for given rules and expanding them. If a new condition is created, it is sent to the \textot{Rules Aggregator}. The number of these operators depends on a given level of parallelism (partitions).\\
 	
-	\item[--] \textot{Modulo Partitioner} -- it is responsible for distributing rule statistics between partitions. We simply use a modulo formula based on an rule's id.
+	\item[--] \textot{Modulo Partitioner} -- it is responsible for distributing rule statistics between partitions. We simply use a modulo formula based on the rule's id.
 \end{itemize}
 \medskip
 
@@ -166,7 +166,7 @@ To implement the horizontal parallelization (\textot{HAMR}) we simply created a 
 
 \section{Experiments}
 
-In the experimental section, we evaluated our implementations of the distributed AMR, using different data streams and levels of parallelism. We compared them with the sequential version of the algorithm.
+In the experimental section, we evaluated our implementations of the distributed AMR, using different data streams and levels of parallelism. We compared them with the sequential version of the algorithm that we implemented from scratch in Scala.
 
 \subsection{Data streams}
 
@@ -180,7 +180,7 @@ During the experiments, we used 10 different data streams (7 real and 3 syntheti
 			\toprule
 			Name & Instances & Attributes & Classes & Type \\ 
 			\midrule
-			ActivityRaw & 1 048 570 & 3 & 6 & Real \\
+			Activity & 1 048 570 & 3 & 6 & Real \\
 			Connect4 & 67 557 & 42 & 3 & Real \\
 			Covertype & 581 012 & 54 & 7 & Real \\
 			Electricity & 45 312 & 8 & 2 & Real \\
