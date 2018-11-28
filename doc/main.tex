@@ -63,7 +63,7 @@
 \maketitle
 
 \begin{abstract}
-	The abstract goes here.
+	Data stream mining is among the most important contemporary machine learning issues. The potentially infinite sources give us many opportunities, but also pose additional challenges. To properly handle streaming data we need to adjust our solutions, so they can work with dynamic data and under strict constraints. Adaptive rule-based classifiers are one of the algorithms that can be utilized in this domain. They can work in the online setting, incorporating incoming instances and providing a human-readable form of their models. On the other hand, since they are often characterized by a relatively high computational complexity, parallelization of such methods may be necessary if we want to use them in the streaming environment. Distributed systems are one of the possible solutions that have been already successfully used in this task. In this work, we present an implementation of adaptive rules distributed using Apache Flink framework. The obtained results indicate that the horizontal parallelization is able to provide significant speed-up without impeding accuracy 
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
@@ -79,11 +79,9 @@
 
 In machine learning domain we have to take into consideration two substantial observations. Firstly, distributions of data streams are very often non-stationary. Concepts are evolving as time passes, unseen or rare data samples appears. We refer it as a concept drift. Secondly, streams are continuous and potentially infinite. There is no possibility of gathering the whole data and using it for a single batch-mode training. Processing of data streams is restricted to limited rationality, which means that quality and complexity of decisions made by streaming algorithms highly depend on finite computational resources. The algorithms are able to operate only on a partial and temporary knowledge. As a result, previously created models should be regularly adjusted to a dynamically changing environment, to evolving data streams.
 
-The problem of keeping models up-to-date while working under strict constraints is the main concern of adaptive learning methods. In general, we can distinguish two groups of such algorithms: batch-based and on-line. The former may occur in a form of retraining or incremental updates. The latter is a special case of the incremental cases, with the restriction that each incoming instance has to be processed on-by-one, immediately and only once. It seems to be the most suitable to streaming data, since such methods tend to provide minimal latency and low memory occupations.
+The problem of keeping models up-to-date while working under strict constraints is the main concern of adaptive learning methods. In general, we can distinguish two groups of such algorithms: batch-based and on-line. The former may occur in a form of retraining or incremental updates. The latter is a special case of the incremental cases, with the restriction that each incoming instance has to be processed on-by-one, immediately and only once. It seems to be the most suitable to streaming data, since such methods tend to provide minimal latency and low memory occupations. In fact, low latency is one of the most important requirements while designing algorithms for data streams. Distributed streaming frameworks are possible solution to this problem
 
-One of the main constraints is time -> distributed computing
-
-In this work,
+In this work, we introduce an implementation of adaptive rules for data stream mining. We use delineate basic concepts, as well as we present related works. In Section III a sequential algorithm along with proposed implementations are described. Section IV is focused on conducted experiments, while Section V concludes the whole work.
 
 \section{Distributed adaptive rules}
 
@@ -194,7 +192,7 @@ During the experiments, we used 10 different data streams (7 real and 3 syntheti
 			Weather & 18 159 & 8 & 2 & Real \\
 			Wine & 1 000 000 & 13 & 3 & Synthetic \\
 			\bottomrule
-			
+			\\
 	\end{tabular}}
 	\label{tab:data}
 \end{table}
@@ -205,7 +203,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 
 \subsection{Results}
 
-In this section, we present results of the described evaluation. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
+\noindent\textbf{SAMR}. In general, the AMR algorithm exhibited a mediocre performance (Tab. \ref{tab:acc_vertical}) with an exception for the Olympic stream (0.85) and Activity (0.32). The computing time (Tab. \ref{tab:time_horizontal}) varied significantly (standard deviation equal to about 42), which was caused by both data stream size and complexity of generated models.
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -229,7 +227,7 @@ In this section, we present results of the described evaluation. In general, the
 			\textbf{Avg} & \textbf{0.6007} & \textbf{0.9484} & \textbf{0.9411} & \textbf{0.9394} & \textbf{0.9616}\\
 			Std & 0.1423 & 0.1009 & 0.1145 & 0.0995 & 0.1358\\
 			\bottomrule
-			
+			\\
 	\end{tabular}}
 	\label{tab:acc_vertical}
 \end{table}
@@ -261,9 +259,11 @@ In this section, we present results of the described evaluation. In general, the
 	\label{tab:time_vertical}
 \end{table}
 
-One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1. The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), however, it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computing time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
+\medskip
+\noindent\textbf{VAMR}. One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1. The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), however, it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computing time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
 
-Much more encouraging results have been obtained for the horizontal parallelization. One can clearly see that HAMR was able to provide significant speed-ups (increasing more less directly proportionally to number of partitions for P=2 and P=4) while keeping accuracy on a similar level as SAMR. The average loss was about 0.01-0.02 with standard deviation between 0.02-0.08 that was increasing with the number of partitions, being elevated mainly by results for one data stream: Activity (1.05-1.18).
+\medskip
+\noindent\textbf{HAMR}. Much more encouraging results have been obtained for the horizontal parallelization. One can clearly see that HAMR was able to provide significant speed-ups (increasing more less directly proportionally to number of partitions for P=2 and P=4) while keeping accuracy on a similar level as SAMR. The average loss was about 0.01-0.02 with standard deviation between 0.02-0.08 that was increasing with the number of partitions, being elevated mainly by results for one data stream: Activity (1.05-1.18).
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -321,7 +321,8 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 	\label{tab:time_horizontal}
 \end{table}
 
-Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR, since, as it was observed in the previous paragraphs, it keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even further improvements [x].
+\medskip
+\noindent\textbf{Conclusion}. Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR. In the former case, it is possible that the rate of incoming updates is too slow compared with the rate of incoming instances. Increasing the number of partitions even more, may boost the performance of this method. On the other hand, HAMR keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even more improvements [x]. 
 
 \begin{figure}[h]
 	\centering
@@ -384,8 +385,13 @@ Finally, we can conclude that the horizontal parallelization provides better rel
 	\label{fig:ratio}
 \end{figure}
 
+However, one must keep in mind that all the presented results were obtained on a single machine with a limited number of cores. Further evaluation is required to analyze the observed trends while working with multiple physical machines (communication bottlenecks may be significant) providing more partitions to utilize.
+
 \section{Summary}
 
+In the presented work, we introduced our implementation of the distributed ARM classifier in Apache Flink, using two previously established general architectures -- vertical and horizontal. We evaluated VAMR and HAMR on a set of well-known data streams, using different numbers of parallel partitions. The obtained results suggest that the horizontal version better exploits increased resources in terms of maintaining a sufficient accuracy and providing a speed-up.
+
+We treat this work as a preliminary one. In the nearest future, we plan to improve the existing solutions, aiming for increasing both the quality of classification and throughput. An increased number of distributed partitions may give us an opportunity to perform additional optimization steps independently from the main flow. In addition, since rules can be easily interpreted, once we obtain reliable predictions in a reasonable time, we may attempt to analyze how rules are changing for some data streams -- that may lead to some indirect observations about the dynamics of these streams and that knowledge could be utilized in subsequent projects.
 
 \begin{thebibliography}{1}
 	
