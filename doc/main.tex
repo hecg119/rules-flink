@@ -256,12 +256,14 @@ In this section, we present results of the described evaluation. In general, the
 			\textbf{Avg} & \textbf{40.198} & \textbf{2.4669} & \textbf{3.0592} & \textbf{3.4886} & \textbf{3.7692}\\
 			Std & 42.1967 & 2.0922 & 3.2834 & 4.5233 & 5.4596\\
 			\bottomrule
-			
+			\\
 	\end{tabular}}
 	\label{tab:time_vertical}
 \end{table}
 
 One can see that the vertical parallelization leads to some drops in accuracy compared with SAMR, usually up to 0.1. The average drop was oscillating around 0.06 with a relatively high standard deviation (about 0.10), however, it was caused mainly by two data streams: Electricity (drop between 0.3-0.4) and Lymph (improvements about 0.07). At the same time, VAMR was able to provide a more less stable speedup between 3 and 3.5 for more than one partitions. However, it was elevated mainly by results for the Olympic stream (about 8-18), which also significantly increased variability of results. In most cases, the algorithm was not scaling up with the number of partitions. It was expected, since independent updates do not influence prediction in terms of the computing time. On the other hand, increasing the level of parallelization should positively influence accuracy (faster updates) -- it can be barely seen for P=8. It is possible that evaluation using a higher number of cores would provide more information about this relation. The speed-up observed for P=1 was a result of splitting prediction and updates into separate channels.
+
+Much more encouraging results have been obtained for the horizontal parallelization. One can clearly see that HAMR was able to provide significant speed-ups (increasing more less directly proportionally to number of partitions for P=2 and P=4) while keeping accuracy on a similar level as SAMR. The average loss was about 0.01-0.02 with standard deviation between 0.02-0.08 that was increasing with the number of partitions, being elevated mainly by results for one data stream: Activity (1.05-1.18).
 
 \begin{table}[h]
 	\captionsetup{name=Tab}
@@ -290,6 +292,8 @@ One can see that the vertical parallelization leads to some drops in accuracy co
 	\label{tab:acc_horizontal}
 \end{table}
 
+The algorithm was also able to slightly improve results in 3 other cases. It is an important observation, since it indicates that the ensemble of completely independent classifiers (regarding both training and prediction) may be sufficient enough while increasing throughput at the same time. To decide if the impact of such approach is meaningful, we would need to compare results with a single classifier that imply omit some instances.
+
 \begin{table}[h]
 	\captionsetup{name=Tab}
 	\caption{Computing time [s] for SAMR and \textbf{speed-up} when running HAMR with different numbers of partitions P.}
@@ -312,10 +316,12 @@ One can see that the vertical parallelization leads to some drops in accuracy co
 			\textbf{Avg} & \textbf{40.198} & \textbf{2.2745} & \textbf{4.0117} & \textbf{5.5088}\\
 			Std & 44.4792 & 0.5118 & 1.8947 & 3.1022\\
 			\bottomrule
-			
+			\\
 	\end{tabular}}
 	\label{tab:time_horizontal}
 \end{table}
+
+Finally, we can conclude that the horizontal parallelization provides better relation between accuracy relative to the sequential algorithm and obtained speed-up. In Fig. \ref{fig:ratio} we can see that HAMR benefits from increased parallelization more that VAMR, since, as it was observed in the previous paragraphs, it keeps accuracy on a relatively stable level, while providing significant speed-up. It is possible that connecting both methods may lead to even further improvements [x].
 
 \begin{figure}[h]
 	\centering
@@ -374,8 +380,8 @@ One can see that the vertical parallelization leads to some drops in accuracy co
 	
 	\hspace*{0.4cm}
 	\vspace*{-2mm}
-	\caption{Geometric mean of speed-up (Speed) and relative accuracy (Acc) for VAMR and HAMR.}
-	\label{fig:gmean_ratio}
+	\caption{Geometric mean of speed-up (Speed) and relative accuracy (Acc) for VAMR and HAMR (P=1 is SAMR).}
+	\label{fig:ratio}
 \end{figure}
 
 \section{Summary}
