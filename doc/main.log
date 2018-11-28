@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 07:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500 64-bit) (preloaded format=pdflatex 2018.1.29)  28 NOV 2018 08:34
 entering extended mode
 **./main.tex
 (main.tex
@@ -826,88 +826,80 @@ your preamble.
 
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Try loading font information for U+msa on input line 71.
+LaTeX Font Info:    Try loading font information for U+msa on input line 94.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 71.
+LaTeX Font Info:    Try loading font information for U+msb on input line 94.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 71.
- [1{C:/Users/koryc/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
+) [1{C:/Users/koryc/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
 
 ]
-Underfull \hbox (badness 3019) in paragraph at lines 111--113
-\OT1/ptm/m/n/10 How-ever, since com-pu-ta-tion are still or-ga-nized in
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 111--113
+Underfull \hbox (badness 10000) in paragraph at lines 110--112
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--115
+Underfull \hbox (badness 10000) in paragraph at lines 112--114
 
  []
 
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 133.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 132.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\ot1pcr.fd"
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [2]
-Underfull \hbox (badness 10000) in paragraph at lines 147--148
+Underfull \hbox (badness 10000) in paragraph at lines 146--147
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--150
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
 
  []
 
 <img/vertical.pdf, id=23, pagebox=cropbox, 439.6425pt x 377.41pt>
 File: img/vertical.pdf Graphic file (type pdf)
 <use img/vertical.pdf>
-Package pdftex.def Info: img/vertical.pdf  used on input line 157. on input lin
-e 157.
+Package pdftex.def Info: img/vertical.pdf  used on input line 156. on input lin
+e 156.
 Package pdftex.def Info: Requested size: 197.8373pt x 169.83292pt on input line
- 157.
+ 156.
 
-Overfull \hbox (3.38681pt too wide) in paragraph at lines 196--196
+Overfull \hbox (3.38681pt too wide) in paragraph at lines 194--194
  []|\OT1/ptm/m/n/8 Attributes| 
  []
 
 
-Overfull \hbox (5.00163pt too wide) in paragraph at lines 196--196
+Overfull \hbox (5.00163pt too wide) in paragraph at lines 194--194
 []|\OT1/ptm/m/n/8 ActivityRaw| 
  []
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 196--196
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 194--194
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
 
-Overfull \hbox (1.77089pt too wide) in paragraph at lines 196--196
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 194--194
  []|\OT1/ptm/m/n/8 Synthetic| 
  []
 
 
-Overfull \hbox (1.77089pt too wide) in paragraph at lines 196--196
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 194--194
  []|\OT1/ptm/m/n/8 Synthetic| 
  []
 
 
-Overfull \hbox (1.77089pt too wide) in paragraph at lines 196--196
+Overfull \hbox (1.77089pt too wide) in paragraph at lines 194--194
  []|\OT1/ptm/m/n/8 Synthetic| 
  []
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 231--231
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 229--229
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
@@ -915,7 +907,7 @@ Overfull \hbox (1.7538pt too wide) in paragraph at lines 231--231
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 258--258
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 256--256
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
@@ -927,7 +919,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 pdfTeX warning: pdflatex.exe (file ./img/vertical.pdf): PDF inclusion: invalid 
 other resource which is no dict (key 'ProcSets', type <array>); ignored.
 >]
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 291--291
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 289--289
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
@@ -935,7 +927,7 @@ Overfull \hbox (1.7538pt too wide) in paragraph at lines 291--291
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Overfull \hbox (1.7538pt too wide) in paragraph at lines 320--320
+Overfull \hbox (1.7538pt too wide) in paragraph at lines 317--317
 []|\OT1/ptm/m/n/8 Hyperplane| 
  []
 
@@ -946,11 +938,11 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 [4] (main.bbl) [5] (main.aux) ) 
 Here is how much of TeX's memory you used:
- 25914 strings out of 493312
- 653858 string characters out of 3138899
- 851690 words of memory out of 3000000
- 29009 multiletter control sequences out of 15000+200000
- 49143 words of font info for 100 fonts, out of 3000000 for 9000
+ 25901 strings out of 493312
+ 653729 string characters out of 3138899
+ 851635 words of memory out of 3000000
+ 29001 multiletter control sequences out of 15000+200000
+ 45972 words of font info for 92 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  62i,19n,107p,1196b,2253s stack positions out of 5000i,500n,10000p,200000b,80000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/bas
@@ -965,7 +957,7 @@ blic/amsfonts/cm/cmsy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/courier
 rogram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiK
 TeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/typ
 e1/urw/times/utmri8a.pfb>
-Output written on main.pdf (5 pages, 237581 bytes).
+Output written on main.pdf (5 pages, 237101 bytes).
 PDF statistics:
  96 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

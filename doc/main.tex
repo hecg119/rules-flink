@@ -63,41 +63,40 @@
 \maketitle
 
 \begin{abstract}
-	Data stream mining is among the most important contemporary machine learning issues. The potentially infinite sources give us many opportunities, but also pose additional challenges. To properly handle streaming data we need to adjust our solutions, so they can work with dynamic data and under strict constraints. Adaptive rule-based classifiers are one of the algorithms that can be utilized in this domain. They can work in the online setting, incorporating incoming instances and providing a human-readable form of their models. On the other hand, since they are often characterized by a relatively high computational complexity, parallelization of such methods may be necessary if we want to use them in the streaming environment. Distributed systems are one of the possible solutions that have been already successfully used in this task. In this work, we present an implementation of adaptive rules distributed using Apache Flink framework. The obtained results indicate that the horizontal parallelization is able to provide significant speed-up without impeding accuracy 
+	Data stream mining is among the most contemporary machine learning issues. The potentially infinite sources give us many opportunities, but also pose additional challenges. To properly handle streaming data we need to adjust our solutions, so they can work with dynamic data and under strict constraints. Adaptive rule-based classifiers are one of the algorithms that can be utilized in this domain after some improvements. They can work in the online setting, incorporating incoming instances and providing a human-readable form of a model. On the other hand, since they are often characterized by a relatively high computational complexity, parallelization of such methods may be necessary, if we want to use them in the streaming environment. Distributed systems are one of the possible solutions that have been already successfully used in this task. In this work, we present an implementation of adaptive rules distributed using Apache Flink framework. The obtained results indicate that the horizontal parallelization is able to provide significant speed-up without impeding accuracy in a relevant way.
 \end{abstract}
 
-% Note that keywords are not normally used for peerreview papers.
 \begin{IEEEkeywords}
-	IEEE, IEEEtran, journal, \LaTeX, paper, template.
+	data stream mining, adaptive rules, distributed systems, Flink.
 \end{IEEEkeywords}
 
 \IEEEpeerreviewmaketitle
 
 \section{Introduction}
 
-\IEEEPARstart{D}{ata} streams are infinite sources of knowledge and challenges. Sensors, web engines and monitoring systems generate countless data points every day and every second. On the one hand, we have unprecedented opportunities to analyze different phenomenas in a continuous and more adequate way -- not only from scare and incomplete snapshots, as it is in the case of off-line batch processing. On the other hand, we face several problems coming with the nature of rapid, dynamic and massive sources, that have to be properly addressed. 
+\IEEEPARstart{D}{ata} streams are infinite sources of knowledge and challenges. Sensors, web engines and monitoring systems generate countless data points every day and every second. On the one hand, we have unprecedented opportunities to analyze different phenomenas in a continuous and more adequate way -- not only from scare and incomplete snapshots, as it is in the case of offline batch processing. On the other hand, we face several problems coming with the nature of rapid, dynamic and massive sources, that have to be properly addressed. 
 
-In machine learning domain we have to take into consideration two substantial observations. Firstly, distributions of data streams are very often non-stationary. Concepts are evolving as time passes, unseen or rare data samples appears. We refer it as a concept drift. Secondly, streams are continuous and potentially infinite. There is no possibility of gathering the whole data and using it for a single batch-mode training. Processing of data streams is restricted to limited rationality, which means that quality and complexity of decisions made by streaming algorithms highly depend on finite computational resources. The algorithms are able to operate only on a partial and temporary knowledge. As a result, previously created models should be regularly adjusted to a dynamically changing environment, to evolving data streams.
+In the machine learning domain we have to take into consideration two substantial observations. Firstly, distributions of data streams are very often non-stationary. Concepts are evolving as time passes, unseen or rare data samples appears. We refer it as a concept drift. Secondly, streams are continuous and potentially infinite. There is no possibility of gathering the whole data and using it for a single batch-mode training. Processing of data streams is restricted to limited rationality, which means that quality and complexity of decisions made by streaming algorithms highly depend on finite computational resources. The algorithms are able to operate only on a partial and temporary knowledge. Therefore, previously created models should be regularly adjusted to a dynamically changing environment, to evolving data streams.
 
-The problem of keeping models up-to-date while working under strict constraints is the main concern of adaptive learning methods. In general, we can distinguish two groups of such algorithms: batch-based and on-line. The former may occur in a form of retraining or incremental updates. The latter is a special case of the incremental cases, with the restriction that each incoming instance has to be processed on-by-one, immediately and only once. It seems to be the most suitable to streaming data, since such methods tend to provide minimal latency and low memory occupations. In fact, low latency is one of the most important requirements while designing algorithms for data streams. Distributed streaming frameworks are possible solution to this problem
+The problem of keeping models up-to-date, while working under strict constraints, is the main concern of adaptive learning methods. In general, we can distinguish two groups of such algorithms: batch-based and online. The former may occur in a form of retraining or incremental updates. The latter is a special case of the incremental cases, with the restriction that each incoming instance has to be processed one by one, immediately and only once. Such approach seems to be the most suitable to streaming data, since online methods tend to provide minimal latency and low memory occupations. In fact, low latency is one of the most important requirements while designing algorithms for data streams. Distributed streaming frameworks are a possible solution to this problem.
 
 In this work, we introduce an implementation of adaptive rules for data stream mining. We use delineate basic concepts, as well as we present related works. In Section III a sequential algorithm along with proposed implementations are described. Section IV is focused on conducted experiments, while Section V concludes the whole work.
 
 \section{Distributed adaptive rules}
 
-While there are plenty of machine learning algorithms dedicated for data stream mining, like Hoeffding Trees \cite{Domingos:2000} and Oza's ensembles \cite{OzaR:2001}, only few of them provide human-readable forms of models. This may be a significant problem in such domains as medicine or economy, in which automatic decisions should be properly explained.
+While there are plenty of machine learning algorithms dedicated for data stream mining, like Hoeffding Trees \cite{Domingos:2000} and Oza ensembles \cite{OzaR:2001}, only few of them provide human-readable forms of models. This may be a significant problem in such domains as medicine or legal issues, in which automatic decisions should be properly explained.
 
 \subsection{Rule-based models}
-Rule-based algorithms and decision tress are the most suitable in such cases. While the latter are known to be very efficient in terms of computing time, the former is considered the most flexible due to modularity of decision rules.
+Rule-based algorithms and decision tress are the most suitable in these cases. While the latter are known to be very efficient in terms of computing time, the former is considered the most flexible due to modularity of decision rules.
 
-One of the most popular classifiers based on rules is Adaptive Model Rules (AMR) proposed in \cite{Gama:2011}. It is an online model that incorporate knowledge from new instances by expanding its rules based on the widely used Hoeffding bound criterion \cite{Domingos:2000}:
+One of the most popular classifiers based on rules is Adaptive Model Rules (AMR) proposed in \cite{Gama:2011}. It is an online model that incorporates knowledge from new instances by expanding its rules based on the well-known Hoeffding bound criterion \cite{Domingos:2000}:
 
 \begin{equation}
 \label{eq:hbound}
 \epsilon = \sqrt{\frac{R^2\ln(1/\delta)}{2n_l}},
 \end{equation} 
 
-\noindent where $R$ is a value range, $n_l$ is a number of examples seen on a node $l$ and $\delta$ is a confidence parameter. If a difference between two best attributes on the node is greater than $\epsilon$, then there is a $1-\delta$ confidence that the better attribute introduces superior information gain and it should be used to create a split.
+\noindent where $R$ is a value range, $n_l$ is a number of examples seen on a node $l$ and $\delta$ is a confidence parameter. If a difference between two best attributes, on the node is greater than $\epsilon$, then there is a $1-\delta$ confidence that the better attribute introduces superior information gain and it should be used to create a split.
 
 While the flexibility and transparency of rule-based systems are their advantages, a high computational complexity is considered as one of the main drawbacks. Fortunately, since the models are modular, there is a lot of possibilities to improve their performance using parallelization techniques \cite{Cano:2018}.
 
@@ -108,20 +107,20 @@ One of the possible approaches is distribution of computations across several ma
 \medskip
 \begin{itemize}
 	
-	\item \textbf{Spark} -- it is highly oriented on batch processing and treats online processing as a special case of the former. The main idea behind this framework is to perform massive parallel computations on huge batches of data, so the overhead of scheduling tasks becomes minor. Originally, the main use case was to simply ensure computational feasibility for large data sets without a strong focus on the rate of incoming data. Currently, Spark has been evolving into a streaming framework with low latency of processing. Structured Streaming and Continuous Processing are two main features for such cases. The former is based on micro-batches of high-performing Data Frames, which decreases latency. However, since computation are still organized in batches, it may be prohibitive, for example, in cases with limited amount of labeled data Continuous processing enables strictly streaming processing, but since it is still in experimental mode, a lot of operators are not available yet. It is probably the main reason, why modeling online streaming processing is not very convenient in Spark at the moment. 
+	\item \textbf{Spark} -- it is highly oriented on the batch processing and treats the online one as a special case of the former. The main idea behind this framework is to perform massive parallel computations on huge batches of data, so the overhead of scheduling tasks becomes minor. Originally, the main use case was to simply ensure computational feasibility for large data sets without a strong focus on the rate of incoming data. Currently, Spark has been evolving into a streaming framework with low latency of processing. Structured Streaming and Continuous Processing are two main features for such cases. The former is based on micro-batches of high-performing Data Frames, which decreases latency. However, since computations are still organized in batches, it may be prohibitive, for example, in cases with a limited amount of labeled data. Continuous Processing enables strictly streaming computing, but since it is still in an experimental mode, a lot of operators are not available yet. It is probably the main reason, why modeling online streaming processing is not very convenient in Spark at the moment. 
 	\\
-	\item \textbf{Flink} -- this framework can be somehow considered as opposite to Spark -- it is build around the idea of online processing, while batches are special cases of it. All operators in Flink are considered \textit{long-running}. It means that their instances (including parallel ones) are kept on tasks partitions constantly, so data literally \textit{flows} through them in a continuous stream from sources. Such approach naturally creates an environment for statefull computations in which parts of models are maintained in operator instances. It is especially important in the case of adaptive distributed machine learning algorithms.
+	\item \textbf{Flink} -- this framework can be somehow considered as the opposite of Spark -- it is build around the idea of online processing, while batches are special cases of it. All operators in Flink are considered \textit{long-running}. It means that their instances (including parallel ones) are kept on tasks partitions constantly, so data can literally \textit{flow} through them in a continuous stream from sources. Such approach naturally creates an environment for statefull computations in which parts of models are maintained instances of the operators. It is especially important in the case of adaptive distributed machine learning algorithms.
 	\\
 	\item \textbf{Storm} -- it can be treated as a predecessor of Flink. Dedicated for online streaming processing, Storm organizes processing using spouts (sources) and bolts (operators), which handle streaming data. Currently, it seems that Storm is being gradually replaced with Spark Streaming and Flink. In addition, a low rate of contributions to its repository is an another factor that should be taken into consideration while choosing a framework.
 	
 \end{itemize}
 
 \subsection{Distributed decision rules}
-Due to the presented characteristics, it is not surprising that most of the streaming machine learning algorithms, even if few, have been implemented in Storm or Flink, mainly in SAMOA \cite{Morales:2013}. The already mentioned AMR algorithm is one of them \cite{Vu:2014}. 
+Due to the presented characteristics, it is not surprising that most of the distributed streaming machine learning algorithms, even if few, have been implemented in Storm or Flink, mainly in SAMOA \cite{Morales:2013}. The already mentioned AMR algorithm is one of them \cite{Vu:2014}. 
 
-There two main approaches to implementing this algorithm in a distributed manner. The first one is \textbf{vertical parallelization}, in which decision rules are distributed across several partitions, so all necessary updates are performed separately for each rule. Since there is still no efficient way to distribute prediction process without creating a synchronization barrier for each instance, in vertical architecture all conditions are maintained in a single rules aggregator, so only statistics for splits are distributed. One of the most important properties of this method, that should be emphasized, is that incoming instances does not wait for updates that arrive asynchronously.
+There are two main approaches to implementing this algorithm in a distributed manner. The first one is \textbf{vertical parallelization}, in which decision rules are distributed across several partitions, so all necessary updates are performed separately. Since there is still no efficient way to distribute prediction process without creating a synchronization barrier for each instance, in the vertical architecture all conditions are maintained in a single rules aggregator, so only statistics for splits are distributed. One of the most important properties of this method, that should be emphasized, is that incoming instances does not wait for updates arriving asynchronously.
 
-The second approach is \textbf{horizontal parallelization}. In this architecture the algorithm maintains several independent rule models. It allows for processing several instances at the same time. Such approach definitely increases a throughput, however, since for each model a kind of subsampling is performed (depending on its availability), it also introduces a potential problem of undersampling. There is a third option (hybrid) that combines both approaches by introducing a common default rule, which propagates new rules to all models.
+The second approach is \textbf{horizontal parallelization}. In this architecture an algorithm maintains multiple independent rule models. It allows for the processing of several instances at the same time. Such approach definitely increases a throughput, however, since for each model a kind of subsampling is performed (depending on its availability), it also introduces a potential problem of undersampling. There is a third option (hybrid) that combines both approaches by introducing a common default rule, which propagates new rules to all models.
 
 The AMR algorithm has already been implemented in Storm \cite{Vu:2014}. There is also an implementation of the ensemble of Hoeffding Trees in Flink \cite{Vasiloudis:2017}. However, to the best of our knowledge, AMR has not been integrated with the latter framework.
 
@@ -192,7 +191,6 @@ During the experiments, we used 10 different data streams (7 real and 3 syntheti
 			Weather & 18 159 & 8 & 2 & Real \\
 			Wine & 1 000 000 & 13 & 3 & Synthetic \\
 			\bottomrule
-			\\
 	\end{tabular}}
 	\label{tab:data}
 \end{table}
@@ -287,7 +285,7 @@ The experiments were conducted using 1, 2, 4 or 8 partitions on a local machine.
 			\textbf{Avg} & \textbf{0.6007} & \textbf{0.9918} & \textbf{0.9922} & \textbf{0.9801}\\
 			Std & 0.1423 & 0.0265 & 0.0545 & 0.0818\\
 			\bottomrule
-			
+			\\
 	\end{tabular}}
 	\label{tab:acc_horizontal}
 \end{table}
@@ -316,7 +314,6 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 			\textbf{Avg} & \textbf{40.198} & \textbf{2.2745} & \textbf{4.0117} & \textbf{5.5088}\\
 			Std & 44.4792 & 0.5118 & 1.8947 & 3.1022\\
 			\bottomrule
-			\\
 	\end{tabular}}
 	\label{tab:time_horizontal}
 \end{table}
@@ -331,8 +328,8 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 		[
 		title={},
 		title style={yshift=-1.5ex},
-		width=.9\columnwidth,
-		height=.7\columnwidth,
+		width=.85\columnwidth,
+		height=.65\columnwidth,
 		ymin=0.9,
 		ymax=2.8,
 		ytick={0.9,1.2,1.5,1.8,2.1,2.4,2.7},
@@ -378,8 +375,8 @@ The algorithm was also able to slightly improve results in 3 other cases. It is 
 		\end{axis}
 		
 		\end{tikzpicture}
+	\hspace*{1cm}
 	
-	\hspace*{0.4cm}
 	\vspace*{-2mm}
 	\caption{Geometric mean of speed-up (Speed) and relative accuracy (Acc) for VAMR and HAMR (P=1 is SAMR).}
 	\label{fig:ratio}
