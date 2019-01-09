@@ -2,3 +2,7 @@
 target/
 *.iml
 out/
+results.csv
+*.log
+*.aux
+*.gz
