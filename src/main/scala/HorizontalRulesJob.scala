@@ -1,5 +1,8 @@
+import java.io.File
+
 import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
+import java.nio.file.Paths
 
 import eval.Evaluator
 import input.{InputConverter, StreamHeader}
@@ -9,13 +12,16 @@ import utils.Files
 object HorizontalRulesJob {
 
   def main(args: Array[String]) {
+    println("Running Horizontal Rules: " + args.mkString(" "))
+
     if (args.length < 3) {
-      println("Too few parameters, expected: 3. Usage: java -jar rules-flink.jar data/ELEC.arff 8 100")
+      println("Too few parameters, expected: 3. Usage: java -jar horizontal.jar data/ELEC.arff 8 100")
+      System.exit(1)
     }
 
-    val arffPath = args(1) //"data\\ELEC_short.arff"
-    val numPartitions = args(2).toInt //8
-    val extMin = args(3).toInt //100
+    val arffPath = s"${Paths.get(".").toAbsolutePath}/${args(0)}" //"data\\ELEC_short.arff"
+    val numPartitions = args(1).toInt //8
+    val extMin = args(2).toInt //100
 
     println(s"Starting HorizontalRulesJob with: $arffPath $numPartitions $extMin")
 

@@ -17,16 +17,23 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
   val rules: ArrayBuffer[RuleBody] = ArrayBuffer()
   val defaultRule: DefaultRule = new DefaultRule(streamHeader.attrNum(), streamHeader.clsNum(), extMin)
 
+  var i = 0
+  var u = 0
+
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
     //println("Process: " + event.getType)
     //print()
 
     if (event.getType.equals("Instance")) {
+      i = i + 1
+      println("i: " + i)
       val instance = event.instance
       update(instance, ctx)
       out.collect(new Event("Prediction", instance.classLbl, predict(instance)))
     }
     else if (event.getType.equals("NewCondition")) {
+      u = u + 1
+      println("u: " + u)
       updateRule(event.ruleId, event.condition, event.prediction)
     }
     else throw new Error(s"This operator handles only Instance and NewCondition events. Received: ${event.getType}")

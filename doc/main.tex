@@ -164,6 +164,13 @@ In our vertical implementation (VAMR) we used the following long-running operato
 
 To implement the horizontal parallelization (HAMR) we simply created a pipeline connecting the input stream with \textot{Single Predictor}, which is a \textit{MapFunction} containing a single sequential model of ARM, and increased the number of partitions for it. As a result, we achieved our goal by utilizing basic Flink's capabilities.
 
+\begin{figure}[h]	
+	\centering
+	\includegraphics[scale=0.55]{img/horizontal.pdf}	
+	\caption{The Horizontal parallelization.}	
+	\label{fig:horizontal}
+\end{figure}
+
 \section{Experiments}
 
 In the experimental section, we evaluated our implementations of the distributed AMR, using different data streams and levels of parallelism. We compared them with the sequential version of the algorithm that we implemented from scratch in Scala.
