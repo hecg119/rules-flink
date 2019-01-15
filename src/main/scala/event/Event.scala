@@ -1,5 +1,7 @@
 package event
 
+import java.time.LocalDateTime
+
 import input.Instance
 import model.Condition
 
@@ -12,6 +14,7 @@ class Event(eventType: String) extends Serializable {
   var ruleId: Int = _
   var trueClass: Double = _
   var prediction: Double = _
+  var timestamp: String = LocalDateTime.now().toString
 
   def getType: String = eventType
 

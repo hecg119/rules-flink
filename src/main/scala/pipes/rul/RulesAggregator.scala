@@ -1,5 +1,7 @@
 package pipes.rul
 
+import java.time.LocalDateTime
+
 import event.Event
 import input.{Instance, StreamHeader}
 import model.{Condition, DefaultRule, RuleBody}
@@ -22,11 +24,10 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
 
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
     //println("Process: " + event.getType)
-    //print()
 
     if (event.getType.equals("Instance")) {
       i = i + 1
-      println("i: " + i)
+      //println(s"Instance [${LocalDateTime.now().toString}]: " + "i: " + i)
       val instance = event.instance
       update(instance, ctx)
       out.collect(new Event("Prediction", instance.classLbl, predict(instance)))

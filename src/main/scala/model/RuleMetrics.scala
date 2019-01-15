@@ -62,7 +62,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
     val bound = calcHoeffdingBound(count)
     var expansion: (Condition, Double) = null
 
-    var bestSplit: (Condition, Double, Double) = (Condition(-1, "", -1), Double.MaxValue, -1.0)
+    var bestSplit: (Condition, Double, Double) = (new Condition(-1, "", -1), Double.MaxValue, -1.0)
 
     if (ruleEntropy > bound) {
       (0 until attrNum).foreach(attrIdx => {
@@ -118,7 +118,7 @@ class RuleMetrics(attrNum: Int, clsNum: Int, var classesAttributesMetrics: Array
       splitVal = splitVal + step
     }
 
-    (Condition(attIdx, "<=", minEntropySplit._2), minEntropySplit._1, minEntropySplit._3.toDouble) // todo: left or right, depending on entropy
+    (new Condition(attIdx, "<=", minEntropySplit._2), minEntropySplit._1, minEntropySplit._3.toDouble) // todo: left or right, depending on entropy
   }
 
   private def releaseStatistics(): Unit = {

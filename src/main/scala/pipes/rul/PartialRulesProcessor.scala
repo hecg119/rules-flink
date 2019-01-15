@@ -17,7 +17,6 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
   var i = 0
 
   override def flatMap(eventWithId: (Event, Int), collector: Collector[Event]): Unit = {
-    //println(s"Partial [${getRuntimeContext.getIndexOfThisSubtask}]: " + event.getType)
     val event = eventWithId._1
 
     if (event.getType.equals("NewRule")) {
