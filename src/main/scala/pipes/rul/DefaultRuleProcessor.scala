@@ -18,8 +18,8 @@ class DefaultRuleProcessor(streamHeader: StreamHeader, extMin: Int, metricsUpdat
       if (defaultRule.update(instance)) {
         rulesCount = rulesCount + 1
 
-        ctx.output(metricsUpdateTag, new Event("NewRuleMetrics", rulesCount))
-        out.collect(new Event("NewRuleBody", defaultRule.ruleBody.conditions(0), defaultRule.ruleBody.prediction, rulesCount))
+        ctx.output(metricsUpdateTag, new Event("NewRule", rulesCount)) // metrics
+        out.collect(new Event("NewRule", defaultRule.ruleBody.conditions(0), defaultRule.ruleBody.prediction, rulesCount)) //body
 
         defaultRule.reset()
       }

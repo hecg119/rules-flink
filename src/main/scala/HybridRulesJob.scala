@@ -8,14 +8,14 @@ import event.Event
 import input.{InputConverter, StreamHeader}
 import org.apache.flink.streaming.api.datastream.BroadcastStream
 import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor, RulesAggregator}
-import utils.{Files, ModuloPartitioner}
+import utils.{Files, ModuloPartitioner, SimpleMerge}
 
 object HybridRulesJob {
 
   val metricsUpdateTag = new OutputTag[Event]("metrics-update")
 
   def main(args: Array[String]) {
-    println("Running Vertical Rules: " + args.mkString(" "))
+    println("Running Hybrid Rules: " + args.mkString(" "))
 
     //    if (args.length < 4) {
     //      println("Too few parameters, expected: 4. Usage: java -jar vertical.jar data/ELEC.arff 8 100 5000")
@@ -32,7 +32,7 @@ object HybridRulesJob {
     val extMin = 100
     val itMaxDelay = 5000
 
-    println(s"Starting VerticalRulesJob with: $arffPath $numPartitions $extMin $itMaxDelay")
+    println(s"Starting HybridRulesJob with: $arffPath $numPartitions $extMin $itMaxDelay")
 
     val streamHeader: StreamHeader = new StreamHeader(arffPath).parse()
     streamHeader.print()
@@ -46,33 +46,32 @@ object HybridRulesJob {
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
       val instancesStream = iteration.filter(e => e.getType.equals("Instance"))
-      val newConditionsBroadcastStream: BroadcastStream[Event] = iteration.filter(e => e.getType.equals("NewCondition")).broadcast() // rename to newUpdate? (newRule, newCondition)
+      val ruleUpdatesBroadcastStream = iteration.filter(e => e.getType.equals("NewCondition") || e.getType.equals("NewRule")).broadcast()
 
       val predictionsStream = instancesStream
-        .connect(newConditionsBroadcastStream)
+        .connect(ruleUpdatesBroadcastStream)
         .process(new HybridRulesAggregator(streamHeader, extMin, metricsUpdateTag))
         .setParallelism(numPartitions)
 
-      val updateRequestsStream = predictionsStream.getSideOutput(metricsUpdateTag)
+      val updateRequestsStream = predictionsStream.getSideOutput(metricsUpdateTag) // todo: split it into two separate side outputs
       val forwardedInstancesStream = updateRequestsStream.filter(e => e.getType.equals("Instance"))
-      val ruleUpdateRequestsStream = updateRequestsStream.filter(e => e.getType.equals("UpdateRule"))
+      val metricsUpdateRequestsStream = updateRequestsStream.filter(e => e.getType.equals("UpdateRule"))
 
-      val newRulesUpdatesStream = forwardedInstancesStream.process(new DefaultRuleProcessor(streamHeader, extMin, metricsUpdateTag)) // todo: change the tag
-      val newRuleBodiesStream = newRulesUpdatesStream.filter(e => e.getType.equals("NewRuleBody"))
-      val newRuleMetricsStream = newRulesUpdatesStream.filter(e => e.getType.equals("NewRuleMetrics"))
+      val newRulesStream = forwardedInstancesStream.process(new DefaultRuleProcessor(streamHeader, extMin, metricsUpdateTag))
+      val newMetricsStream = newRulesStream.getSideOutput(metricsUpdateTag)
 
-      // connect ruleUpdateRequestsStream with newRule and move to PartialRulesProcessor
+      val metricsUpdatesStream = metricsUpdateRequestsStream.connect(newMetricsStream).process(new SimpleMerge)
 
-      val newConditionsStream = ruleUpdateRequestsStream
+      val newConditionsStream = metricsUpdatesStream
         .map((e: Event) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-        .map(e => e)
+        //.map(e => e)
 
-      // connect newConditionsStream with newRules (=newUpdatesStream) and push out
+      val ruleUpdatesStream = newConditionsStream.connect(newRulesStream).process(new SimpleMerge)
 
-      (newConditionsStream, predictionsStream)
+      (ruleUpdatesStream, predictionsStream)
     }, itMaxDelay)
 
     val resultsStream = mainStream.map(new Evaluator())
@@ -80,7 +79,7 @@ object HybridRulesJob {
     //resultsStream.print()
     //resultsStream.countWindowAll(1000, 1000).sum(0).map(s => s / 1000.0).print()
 
-    val result = env.execute("VerticalRulesJob")
+    val result = env.execute("HybridRulesJob")
 
     val correct: Double = result.getAccumulatorResult("correct-counter")
     val all: Double = result.getAccumulatorResult("all-counter")

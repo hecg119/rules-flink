@@ -16,7 +16,7 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
 
   var i = 0
 
-  override def flatMap(eventWithId: (Event, Int), collector: Collector[Event]): Unit = {
+  override def flatMap(eventWithId: (Event, Int), out: Collector[Event]): Unit = {
     val event = eventWithId._1
 
     if (event.getType.equals("NewRule")) {
@@ -29,20 +29,20 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
         throw new Error(s"This partition maintains rules: ${rulesStats.keys.mkString(" ")}. Received: $ruleId.")
       }
 
-      updateRule(ruleId, event.instance, collector)
+      updateRule(ruleId, event.instance, out)
 
     } else {
       throw new Error(s"This operator handles only NewRule and UpdateRule events. Received: ${event.getType}")
     }
   }
 
-  private def updateRule(ruleId: Int, instance: Instance, collector: Collector[Event]): Unit = {
+  private def updateRule(ruleId: Int, instance: Instance, out: Collector[Event]): Unit = {
     rulesStats(ruleId).updateStatistics(instance)
 
     if (rulesStats(ruleId).count > extMin) {
       val extension = rulesStats(ruleId).expandRule()
       if (extension != null) {
-        collector.collect(new Event("NewCondition", extension._1, extension._2, ruleId))
+        out.collect(new Event("NewCondition", extension._1, extension._2, ruleId))
       }
     }
   }
