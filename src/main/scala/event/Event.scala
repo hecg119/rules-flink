@@ -23,7 +23,7 @@ class Event(eventType: String) extends Serializable {
     this.instance = instance
   }
 
-  def this(eventType: String, condition: Condition, prediction: Double, ruleId: Int) = { // NewCondition
+  def this(eventType: String, condition: Condition, prediction: Double, ruleId: Int) = { // NewCondition, NewRule (from DefaultRule)
     this(eventType)
     this.condition = condition
     this.ruleId = ruleId

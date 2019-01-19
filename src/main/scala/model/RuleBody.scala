@@ -39,4 +39,4 @@ class RuleBody(var conditions: ArrayBuffer[Condition], var prediction: Double) e
 
 }
 
-//case class Condition(attributeIdx: Int, relation: String, value: Double)
+case class Condition(attributeIdx: Int, relation: String, value: Double)

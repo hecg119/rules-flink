@@ -23,24 +23,20 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
   var u = 0
 
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
-    //println("Process: " + event.getType)
-
     if (event.getType.equals("Instance")) {
-      i = i + 1
-      //println(s"Instance [${LocalDateTime.now().toString}]: " + "i: " + i)
+      println("I")
       val instance = event.instance
-      update(instance, ctx)
+      updateMetrics(instance, ctx)
       out.collect(new Event("Prediction", instance.classLbl, predict(instance)))
     }
     else if (event.getType.equals("NewCondition")) {
-      u = u + 1
-      println("u: " + u)
+      println("UUUU")
       updateRule(event.ruleId, event.condition, event.prediction)
     }
     else throw new Error(s"This operator handles only Instance and NewCondition events. Received: ${event.getType}")
   }
 
-  def update(instance: Instance, ctx:ProcessFunction[Event, Event]#Context): Unit = {
+  def updateMetrics(instance: Instance, ctx:ProcessFunction[Event, Event]#Context): Unit = {
     val rulesToUpdate = rules
       .zipWithIndex
       .filter(_._1.cover(instance))

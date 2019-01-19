@@ -6,25 +6,26 @@ import java.util.concurrent.TimeUnit
 import eval.Evaluator
 import event.Event
 import input.{InputConverter, StreamHeader}
-import pipes.rul.{PartialRulesProcessor, RulesAggregator}
+import org.apache.flink.streaming.api.datastream.BroadcastStream
+import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor, RulesAggregator}
 import utils.{Files, ModuloPartitioner}
 
-object VerticalRulesJob {
+object HybridRulesJob {
 
   val metricsUpdateTag = new OutputTag[Event]("metrics-update")
 
   def main(args: Array[String]) {
     println("Running Vertical Rules: " + args.mkString(" "))
 
-//    if (args.length < 4) {
-//      println("Too few parameters, expected: 4. Usage: java -jar vertical.jar data/ELEC.arff 8 100 5000")
-//      System.exit(1)
-//    }
-//
-//    val arffPath = s"${Paths.get(".").toAbsolutePath}/${args(0)}" //"data\\ELEC.arff"
-//    val numPartitions = args(1).toInt //8
-//    val extMin = args(2).toInt //100
-//    val itMaxDelay = args(3).toInt //5000
+    //    if (args.length < 4) {
+    //      println("Too few parameters, expected: 4. Usage: java -jar vertical.jar data/ELEC.arff 8 100 5000")
+    //      System.exit(1)
+    //    }
+    //
+    //    val arffPath = s"${Paths.get(".").toAbsolutePath}/${args(0)}" //"data\\ELEC.arff"
+    //    val numPartitions = args(1).toInt //8
+    //    val extMin = args(2).toInt //100
+    //    val itMaxDelay = args(3).toInt //5000
 
     val arffPath = "data\\ELEC.arff"
     val numPartitions = 8
@@ -44,15 +45,32 @@ object VerticalRulesJob {
 
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
-      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, metricsUpdateTag)) //setParallelism(#)
-      val rulesUpdatesStream = predictionsStream.getSideOutput(metricsUpdateTag)
+      val instancesStream = iteration.filter(e => e.getType.equals("Instance"))
+      val newConditionsBroadcastStream: BroadcastStream[Event] = iteration.filter(e => e.getType.equals("NewCondition")).broadcast() // rename to newUpdate? (newRule, newCondition)
 
-      val newConditionsStream = rulesUpdatesStream
+      val predictionsStream = instancesStream
+        .connect(newConditionsBroadcastStream)
+        .process(new HybridRulesAggregator(streamHeader, extMin, metricsUpdateTag))
+        .setParallelism(numPartitions)
+
+      val updateRequestsStream = predictionsStream.getSideOutput(metricsUpdateTag)
+      val forwardedInstancesStream = updateRequestsStream.filter(e => e.getType.equals("Instance"))
+      val ruleUpdateRequestsStream = updateRequestsStream.filter(e => e.getType.equals("UpdateRule"))
+
+      val newRulesUpdatesStream = forwardedInstancesStream.process(new DefaultRuleProcessor(streamHeader, extMin, metricsUpdateTag)) // todo: change the tag
+      val newRuleBodiesStream = newRulesUpdatesStream.filter(e => e.getType.equals("NewRuleBody"))
+      val newRuleMetricsStream = newRulesUpdatesStream.filter(e => e.getType.equals("NewRuleMetrics"))
+
+      // connect ruleUpdateRequestsStream with newRule and move to PartialRulesProcessor
+
+      val newConditionsStream = ruleUpdateRequestsStream
         .map((e: Event) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
         .map(e => e)
+
+      // connect newConditionsStream with newRules (=newUpdatesStream) and push out
 
       (newConditionsStream, predictionsStream)
     }, itMaxDelay)
