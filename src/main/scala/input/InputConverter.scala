@@ -1,6 +1,6 @@
 package input
 
-import event.Event
+import event.{Event, InstanceEvent}
 import org.apache.flink.api.common.functions.MapFunction
 
 class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Event] {
@@ -12,7 +12,7 @@ class InputConverter(streamHeader: StreamHeader) extends MapFunction[String, Eve
       .zipWithIndex
       .map({ case (c: String, idx: Int) => streamHeader.column(idx, c.trim) })
 
-    new Event("Instance", Instance(convertedColumns.dropRight(1), convertedColumns.last))
+    InstanceEvent(Instance(convertedColumns.dropRight(1), convertedColumns.last))
   }
 
 }

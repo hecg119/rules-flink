@@ -1,8 +1,6 @@
 package pipes.rul
 
-import java.time.LocalDateTime
-
-import event.Event
+import event._
 import input.{Instance, StreamHeader}
 import model.{Condition, DefaultRule, RuleBody}
 import org.apache.flink.streaming.api.functions.ProcessFunction
@@ -12,7 +10,7 @@ import utils.Rules
 
 import scala.collection.mutable.ArrayBuffer
 
-class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[Event]) extends ProcessFunction[Event, Event] {
+class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[MetricsEvent]) extends ProcessFunction[Event, Event] {
 
   val clsNum: Int = streamHeader.clsNum()
 
@@ -23,17 +21,19 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
   var u = 0
 
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
-    if (event.getType.equals("Instance")) {
-      println("I")
-      val instance = event.instance
-      updateMetrics(instance, ctx)
-      out.collect(new Event("Prediction", instance.classLbl, predict(instance)))
+    event match {
+      case e: InstanceEvent =>
+        println("I")
+        val instance = e.instance
+        updateMetrics(instance, ctx)
+        out.collect(PredictionEvent(instance.classLbl, predict(instance)))
+
+      case e: NewConditionEvent =>
+        println("UUUU")
+        updateRule(e.ruleId, e.condition, e.prediction)
+
+      case _ => throw new Error(s"This operator handles only InstanceEvent or ConditionEvent. Received: ${event.getClass}")
     }
-    else if (event.getType.equals("NewCondition")) {
-      println("UUUU")
-      updateRule(event.ruleId, event.condition, event.prediction)
-    }
-    else throw new Error(s"This operator handles only Instance and NewCondition events. Received: ${event.getType}")
   }
 
   def updateMetrics(instance: Instance, ctx:ProcessFunction[Event, Event]#Context): Unit = {
@@ -42,10 +42,10 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, new Event("UpdateRule", ruleId, instance)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, RuleMetricsUpdateEvent(ruleId, instance)))
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
-      ctx.output(metricsUpdateTag, new Event("NewRule", rules.length))
+      ctx.output(metricsUpdateTag, NewRuleMetricsEvent(rules.length))
       rules.append(new RuleBody(defaultRule.ruleBody.conditions, defaultRule.ruleBody.prediction))
       defaultRule.reset()
     }

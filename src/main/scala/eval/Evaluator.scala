@@ -1,8 +1,8 @@
 package eval
 
-import event.Event
-import org.apache.flink.api.common.functions.{MapFunction, RichMapFunction}
-import org.apache.flink.api.common.accumulators.{DoubleCounter, IntCounter}
+import event.{Event, PredictionEvent}
+import org.apache.flink.api.common.functions.RichMapFunction
+import org.apache.flink.api.common.accumulators.DoubleCounter
 import org.apache.flink.configuration.Configuration
 
 class Evaluator extends RichMapFunction[Event, Int]{
@@ -17,18 +17,18 @@ class Evaluator extends RichMapFunction[Event, Int]{
   }
 
   override def map(predictionEvent: Event): Int = {
-    if (!predictionEvent.getType.equals("Prediction")) {
-      throw new Error(s"This operator handles only Prediction events. Received: ${predictionEvent.getType}")
+    predictionEvent match {
+      case e: PredictionEvent =>
+        val prediction = e.prediction.toInt
+        val trueClass = e.trueClass.toInt
+        val correct = if (trueClass == prediction) 1 else 0
+
+        allCounter.add(1.0)
+        correctCounter.add(correct)
+
+        correct
+      case _ => throw new Error(s"This operator handles only PredictionEvent. Received: ${predictionEvent.getClass}")
     }
-
-    val prediction = predictionEvent.prediction.toInt
-    val trueClass = predictionEvent.trueClass.toInt
-    val correct = if (trueClass == prediction) 1 else 0
-
-    allCounter.add(1.0)
-    correctCounter.add(correct)
-
-    correct
   }
 
 }

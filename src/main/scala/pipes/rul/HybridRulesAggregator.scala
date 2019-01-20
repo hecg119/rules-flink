@@ -10,7 +10,8 @@ import utils.Rules
 
 import scala.collection.mutable.ArrayBuffer
 
-class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[Event]) extends BroadcastProcessFunction[Event, Event, Event] {
+class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[Event], forwardedInstancesTag: OutputTag[Event])
+  extends BroadcastProcessFunction[Event, Event, Event] {
 
   val clsNum: Int = streamHeader.clsNum()
   val rules: ArrayBuffer[RuleBody] = ArrayBuffer()
@@ -44,7 +45,7 @@ class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpda
     rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, new Event("UpdateRule", ruleId, instance)))
 
     if (rulesToUpdate.isEmpty) {
-      ctx.output(metricsUpdateTag, new Event("Instance", instance))
+      ctx.output(forwardedInstancesTag, new Event("Instance", instance))
     }
   }
 

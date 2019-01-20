@@ -4,14 +4,14 @@ import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
-import event.Event
+import event.{Event, MetricsEvent}
 import input.{InputConverter, StreamHeader}
 import pipes.rul.{PartialRulesProcessor, RulesAggregator}
 import utils.{Files, ModuloPartitioner}
 
 object VerticalRulesJob {
 
-  val metricsUpdateTag = new OutputTag[Event]("metrics-update")
+  val metricsUpdateTag = new OutputTag[MetricsEvent]("metrics-update")
 
   def main(args: Array[String]) {
     println("Running Vertical Rules: " + args.mkString(" "))
@@ -44,11 +44,11 @@ object VerticalRulesJob {
 
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
-      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, metricsUpdateTag)) //setParallelism(#)
-      val rulesUpdatesStream = predictionsStream.getSideOutput(metricsUpdateTag)
+      val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, metricsUpdateTag))
+      val rulesUpdatesStream: DataStream[MetricsEvent] = predictionsStream.getSideOutput(metricsUpdateTag)
 
       val newConditionsStream = rulesUpdatesStream
-        .map((e: Event) => (e, e.ruleId))
+        .map((e: MetricsEvent) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)

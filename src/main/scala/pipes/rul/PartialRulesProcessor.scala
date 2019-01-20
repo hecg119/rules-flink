@@ -1,6 +1,6 @@
 package pipes.rul
 
-import event.Event
+import event._
 import input.{Instance, StreamHeader}
 import model.RuleMetrics
 import org.apache.flink.api.common.functions.RichFlatMapFunction
@@ -8,7 +8,7 @@ import org.apache.flink.util.Collector
 
 import scala.collection.mutable
 
-class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends RichFlatMapFunction[(Event, Int), Event] {
+class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends RichFlatMapFunction[(MetricsEvent, Int), Event] {
 
   val attrNum: Int = streamHeader.attrNum()
   val clsNum: Int = streamHeader.clsNum()
@@ -16,23 +16,22 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
 
   var i = 0
 
-  override def flatMap(eventWithId: (Event, Int), out: Collector[Event]): Unit = {
+  override def flatMap(eventWithId: (MetricsEvent, Int), out: Collector[Event]): Unit = {
     val event = eventWithId._1
 
-    if (event.getType.equals("NewRule")) {
-      rulesStats.put(event.ruleId, new RuleMetrics(attrNum, clsNum))
-    }
-    else if (event.getType.equals("UpdateRule")) {
-      val ruleId = event.ruleId
+    event match {
+      case e: NewRuleMetricsEvent => rulesStats.put(e.ruleId, new RuleMetrics(attrNum, clsNum))
 
-      if (!rulesStats.contains(ruleId)) {
-        throw new Error(s"This partition maintains rules: ${rulesStats.keys.mkString(" ")}. Received: $ruleId.")
-      }
+      case e: RuleMetricsUpdateEvent =>
+        val ruleId = e.ruleId
 
-      updateRule(ruleId, event.instance, out)
+        if (!rulesStats.contains(ruleId)) {
+          throw new Error(s"This partition maintains rules: ${rulesStats.keys.mkString(" ")}. Received: $ruleId.")
+        }
 
-    } else {
-      throw new Error(s"This operator handles only NewRule and UpdateRule events. Received: ${event.getType}")
+        updateRule(ruleId, e.instance, out)
+
+      case _ => throw new Error(s"This operator handles only NewRuleMetricsEvent and RuleMetricsUpdateEvent. Received: ${event.getClass}")
     }
   }
 
@@ -42,7 +41,7 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
     if (rulesStats(ruleId).count > extMin) {
       val extension = rulesStats(ruleId).expandRule()
       if (extension != null) {
-        out.collect(new Event("NewCondition", extension._1, extension._2, ruleId))
+        out.collect(NewConditionEvent(extension._1, extension._2, ruleId))
       }
     }
   }

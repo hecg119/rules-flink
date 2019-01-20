@@ -13,6 +13,7 @@ import utils.{Files, ModuloPartitioner, SimpleMerge}
 object HybridRulesJob {
 
   val metricsUpdateTag = new OutputTag[Event]("metrics-update")
+  val forwardedInstancesTag = new OutputTag[Event]("forwarded-instances")
 
   def main(args: Array[String]) {
     println("Running Hybrid Rules: " + args.mkString(" "))
@@ -50,12 +51,11 @@ object HybridRulesJob {
 
       val predictionsStream = instancesStream
         .connect(ruleUpdatesBroadcastStream)
-        .process(new HybridRulesAggregator(streamHeader, extMin, metricsUpdateTag))
+        .process(new HybridRulesAggregator(streamHeader, extMin, metricsUpdateTag, forwardedInstancesTag))
         .setParallelism(numPartitions)
 
-      val updateRequestsStream = predictionsStream.getSideOutput(metricsUpdateTag) // todo: split it into two separate side outputs
-      val forwardedInstancesStream = updateRequestsStream.filter(e => e.getType.equals("Instance"))
-      val metricsUpdateRequestsStream = updateRequestsStream.filter(e => e.getType.equals("UpdateRule"))
+      val metricsUpdateRequestsStream = predictionsStream.getSideOutput(metricsUpdateTag)
+      val forwardedInstancesStream = predictionsStream.getSideOutput(forwardedInstancesTag)
 
       val newRulesStream = forwardedInstancesStream.process(new DefaultRuleProcessor(streamHeader, extMin, metricsUpdateTag))
       val newMetricsStream = newRulesStream.getSideOutput(metricsUpdateTag)
