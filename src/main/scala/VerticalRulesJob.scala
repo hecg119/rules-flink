@@ -45,14 +45,14 @@ object VerticalRulesJob {
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
       val predictionsStream = iteration.process(new RulesAggregator(streamHeader, extMin, metricsUpdateTag))
-      val rulesUpdatesStream: DataStream[MetricsEvent] = predictionsStream.getSideOutput(metricsUpdateTag)
+      val metricsUpdatesStream: DataStream[MetricsEvent] = predictionsStream.getSideOutput(metricsUpdateTag)
 
-      val newConditionsStream = rulesUpdatesStream
+      val newConditionsStream = metricsUpdatesStream
         .map((e: MetricsEvent) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-        .map(e => e)
+        .map(e => e) // remove?
 
       (newConditionsStream, predictionsStream)
     }, itMaxDelay)

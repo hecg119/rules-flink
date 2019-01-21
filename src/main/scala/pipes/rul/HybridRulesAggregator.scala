@@ -1,6 +1,6 @@
 package pipes.rul
 
-import event.Event
+import event._
 import input.{Instance, StreamHeader}
 import model.{Condition, RuleBody}
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction
@@ -8,49 +8,50 @@ import org.apache.flink.streaming.api.scala.OutputTag
 import org.apache.flink.util.Collector
 import utils.Rules
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 
-class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[Event], forwardedInstancesTag: OutputTag[Event])
+class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag: OutputTag[MetricsEvent], forwardedInstancesTag: OutputTag[Event])
   extends BroadcastProcessFunction[Event, Event, Event] {
 
   val clsNum: Int = streamHeader.clsNum()
-  val rules: ArrayBuffer[RuleBody] = ArrayBuffer()
+  val rules: mutable.Map[Int, RuleBody] = mutable.Map()
 
   var i = 0
   var u = 0
 
   override def processBroadcastElement(event: Event, ctx: BroadcastProcessFunction[Event, Event, Event]#Context, collector: Collector[Event]): Unit = {
-    if (event.getType.equals("NewCondition")) {
-      updateRule(event.ruleId, event.condition, event.prediction)
-    } else if (event.getType.equals("NewRule")) {
-      rules.append(new RuleBody(ArrayBuffer(event.condition), event.prediction))
+    event match {
+      case e: NewConditionEvent => updateRule(e.ruleId, e.condition, e.prediction)
+      case e: NewRuleBodyEvent => rules.put(e.ruleId, new RuleBody(e.conditions, e.prediction))
+      case _ => throw new Error(s"This operator handles only NewConditionEvent or NewRuleBodyEvent (broadcast). Received: ${event.getClass}")
     }
-    else throw new Error(s"This operator handles only NewCondition broadcast events. Received: ${event.getType}")
   }
 
   override def processElement(event: Event, ctx: BroadcastProcessFunction[Event, Event, Event]#ReadOnlyContext, out: Collector[Event]): Unit = {
-    if (event.getType.equals("Instance")) {
-      val instance = event.instance
-      requestMetricsUpdate(instance, ctx)
-      out.collect(new Event("Prediction", instance.classLbl, predict(instance)))
+    event match {
+      case e: InstanceEvent =>
+        val instance = e.instance
+        requestMetricsUpdate(instance, ctx)
+        out.collect(PredictionEvent(instance.classLbl, predict(instance)))
+
+      case _ => throw new Error(s"This operator handles only InstanceEvent. Received: ${event.getClass}")
     }
   }
 
   def requestMetricsUpdate(instance: Instance, ctx: BroadcastProcessFunction[Event, Event, Event]#ReadOnlyContext): Unit = {
     val rulesToUpdate = rules
-      .zipWithIndex
-      .filter(_._1.cover(instance))
-      .map(_._2)
+      .filter(_._2.cover(instance))
+      .keys
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, new Event("UpdateRule", ruleId, instance)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, RuleMetricsUpdateEvent(ruleId, instance)))
 
     if (rulesToUpdate.isEmpty) {
-      ctx.output(forwardedInstancesTag, new Event("Instance", instance))
+      ctx.output(forwardedInstancesTag, InstanceEvent(instance))
     }
   }
 
   def predict(instance: Instance): Double = {
-    Rules.classify(instance, rules.toArray, clsNum)
+    Rules.classify(instance, rules.values.toArray, clsNum)
   }
 
   def updateRule(ruleId: Int, newCondition: Condition, newPrediction: Double): Unit = {
@@ -59,7 +60,7 @@ class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpda
   }
 
   def print(): Unit = {
-    Rules.printRules(rules.toArray, streamHeader)
+    Rules.printRules(rules.values.toArray, streamHeader)
   }
 
 }

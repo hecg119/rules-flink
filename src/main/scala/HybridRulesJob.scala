@@ -4,15 +4,14 @@ import org.apache.flink.streaming.api.scala._
 import java.util.concurrent.TimeUnit
 
 import eval.Evaluator
-import event.Event
+import event._
 import input.{InputConverter, StreamHeader}
-import org.apache.flink.streaming.api.datastream.BroadcastStream
-import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor, RulesAggregator}
-import utils.{Files, ModuloPartitioner, SimpleMerge}
+import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor}
+import utils.{Files, ModuloPartitioner, SimpleMerge, SimpleMerge2}
 
 object HybridRulesJob {
 
-  val metricsUpdateTag = new OutputTag[Event]("metrics-update")
+  val metricsUpdateTag = new OutputTag[MetricsEvent]("metrics-update")
   val forwardedInstancesTag = new OutputTag[Event]("forwarded-instances")
 
   def main(args: Array[String]) {
@@ -46,8 +45,8 @@ object HybridRulesJob {
 
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
-      val instancesStream = iteration.filter(e => e.getType.equals("Instance"))
-      val ruleUpdatesBroadcastStream = iteration.filter(e => e.getType.equals("NewCondition") || e.getType.equals("NewRule")).broadcast()
+      val instancesStream = iteration.filter(e => e.isInstanceOf[InstanceEvent])
+      val ruleUpdatesBroadcastStream = iteration.filter(e => e.isInstanceOf[NewConditionEvent] || e.isInstanceOf[NewRuleBodyEvent]).broadcast() // add common RuleEvent class
 
       val predictionsStream = instancesStream
         .connect(ruleUpdatesBroadcastStream)
@@ -60,10 +59,10 @@ object HybridRulesJob {
       val newRulesStream = forwardedInstancesStream.process(new DefaultRuleProcessor(streamHeader, extMin, metricsUpdateTag))
       val newMetricsStream = newRulesStream.getSideOutput(metricsUpdateTag)
 
-      val metricsUpdatesStream = metricsUpdateRequestsStream.connect(newMetricsStream).process(new SimpleMerge)
+      val metricsUpdatesStream: DataStream[MetricsEvent] = metricsUpdateRequestsStream.connect(newMetricsStream).process(new SimpleMerge)
 
       val newConditionsStream = metricsUpdatesStream
-        .map((e: Event) => (e, e.ruleId))
+        .map((e: MetricsEvent) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
         .flatMap(new PartialRulesProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
