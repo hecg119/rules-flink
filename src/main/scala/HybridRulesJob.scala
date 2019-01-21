@@ -7,7 +7,7 @@ import eval.Evaluator
 import event._
 import input.{InputConverter, StreamHeader}
 import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor}
-import utils.{Files, ModuloPartitioner, SimpleMerge, SimpleMerge2}
+import utils.{Files, ModuloPartitioner, SimpleMerge}
 
 object HybridRulesJob {
 
