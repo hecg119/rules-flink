@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import eval.Evaluator
 import event.{Event, MetricsEvent}
 import input.{InputConverter, StreamHeader}
-import pipes.rul.{PartialRulesProcessor, RulesAggregator}
+import pipes.rul.{PartialMetricsProcessor, RulesAggregator}
 import utils.{Files, ModuloPartitioner}
 
 object VerticalRulesJob {
@@ -50,9 +50,9 @@ object VerticalRulesJob {
       val newConditionsStream = metricsUpdatesStream
         .map((e: MetricsEvent) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
-        .flatMap(new PartialRulesProcessor(streamHeader, extMin))
+        .flatMap(new PartialMetricsProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-        .map(e => e) // remove?
+        .map(e => e)
 
       (newConditionsStream, predictionsStream)
     }, itMaxDelay)

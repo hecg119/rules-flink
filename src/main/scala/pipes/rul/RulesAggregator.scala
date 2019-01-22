@@ -23,16 +23,16 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
   override def processElement(event: Event, ctx: ProcessFunction[Event, Event]#Context, out: Collector[Event]): Unit = {
     event match {
       case e: InstanceEvent =>
-        println("I")
+        //println("I")
         val instance = e.instance
         updateMetrics(instance, ctx)
         out.collect(PredictionEvent(instance.classLbl, predict(instance)))
 
       case e: NewConditionEvent =>
-        println("UUUU")
+        //println("UUUU")
         updateRule(e.ruleId, e.condition, e.prediction)
 
-      case _ => throw new Error(s"This operator handles only InstanceEvent or ConditionEvent. Received: ${event.getClass}")
+      case _ => throw new Error(s"This operator handles only InstanceEvent or NewConditionEvent. Received: ${event.getClass}")
     }
   }
 
@@ -42,10 +42,10 @@ class RulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpdateTag:
       .filter(_._1.cover(instance))
       .map(_._2)
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, RuleMetricsUpdateEvent(ruleId, instance)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, MetricsUpdateEvent(ruleId, instance)))
 
     if (rulesToUpdate.isEmpty && defaultRule.update(instance)) {
-      ctx.output(metricsUpdateTag, NewRuleMetricsEvent(rules.length))
+      ctx.output(metricsUpdateTag, NewMetricsEvent(rules.length))
       rules.append(new RuleBody(defaultRule.ruleBody.conditions, defaultRule.ruleBody.prediction))
       defaultRule.reset()
     }

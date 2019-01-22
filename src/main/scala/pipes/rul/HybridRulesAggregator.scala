@@ -19,14 +19,6 @@ class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpda
   var i = 0
   var u = 0
 
-  override def processBroadcastElement(event: Event, ctx: BroadcastProcessFunction[Event, Event, Event]#Context, collector: Collector[Event]): Unit = {
-    event match {
-      case e: NewConditionEvent => updateRule(e.ruleId, e.condition, e.prediction)
-      case e: NewRuleBodyEvent => rules.put(e.ruleId, new RuleBody(e.conditions, e.prediction))
-      case _ => throw new Error(s"This operator handles only NewConditionEvent or NewRuleBodyEvent (broadcast). Received: ${event.getClass}")
-    }
-  }
-
   override def processElement(event: Event, ctx: BroadcastProcessFunction[Event, Event, Event]#ReadOnlyContext, out: Collector[Event]): Unit = {
     event match {
       case e: InstanceEvent =>
@@ -38,12 +30,20 @@ class HybridRulesAggregator(streamHeader: StreamHeader, extMin: Int, metricsUpda
     }
   }
 
+  override def processBroadcastElement(event: Event, ctx: BroadcastProcessFunction[Event, Event, Event]#Context, collector: Collector[Event]): Unit = {
+    event match {
+      case e: NewConditionEvent => updateRule(e.ruleId, e.condition, e.prediction)
+      case e: NewRuleBodyEvent => rules.put(e.ruleId, new RuleBody(e.conditions, e.prediction))
+      case _ => throw new Error(s"This operator handles only NewConditionEvent or NewRuleBodyEvent (broadcast). Received: ${event.getClass}")
+    }
+  }
+
   def requestMetricsUpdate(instance: Instance, ctx: BroadcastProcessFunction[Event, Event, Event]#ReadOnlyContext): Unit = {
     val rulesToUpdate = rules
       .filter(_._2.cover(instance))
       .keys
 
-    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, RuleMetricsUpdateEvent(ruleId, instance)))
+    rulesToUpdate.foreach((ruleId: Int) => ctx.output(metricsUpdateTag, MetricsUpdateEvent(ruleId, instance)))
 
     if (rulesToUpdate.isEmpty) {
       ctx.output(forwardedInstancesTag, InstanceEvent(instance))

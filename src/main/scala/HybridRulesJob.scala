@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import eval.Evaluator
 import event._
 import input.{InputConverter, StreamHeader}
-import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialRulesProcessor}
+import pipes.rul.{DefaultRuleProcessor, HybridRulesAggregator, PartialMetricsProcessor}
 import utils.{Files, ModuloPartitioner, SimpleMerge}
 
 object HybridRulesJob {
@@ -46,7 +46,7 @@ object HybridRulesJob {
     val mainStream: DataStream[Event] = eventsStream.iterate((iteration: DataStream[Event]) =>
     {
       val instancesStream = iteration.filter(e => e.isInstanceOf[InstanceEvent])
-      val ruleUpdatesBroadcastStream = iteration.filter(e => e.isInstanceOf[NewConditionEvent] || e.isInstanceOf[NewRuleBodyEvent]).broadcast() // add common RuleEvent class
+      val ruleUpdatesBroadcastStream = iteration.filter(e => e.isInstanceOf[RuleEvent]).broadcast()
 
       val predictionsStream = instancesStream
         .connect(ruleUpdatesBroadcastStream)
@@ -64,9 +64,9 @@ object HybridRulesJob {
       val newConditionsStream = metricsUpdatesStream
         .map((e: MetricsEvent) => (e, e.ruleId))
         .partitionCustom(new ModuloPartitioner(numPartitions), 1)
-        .flatMap(new PartialRulesProcessor(streamHeader, extMin))
+        .flatMap(new PartialMetricsProcessor(streamHeader, extMin))
         .setParallelism(numPartitions)
-        //.map(e => e)
+        .map(e => e)
 
       val ruleUpdatesStream = newConditionsStream.connect(newRulesStream).process(new SimpleMerge)
 

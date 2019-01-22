@@ -8,7 +8,7 @@ import org.apache.flink.util.Collector
 
 import scala.collection.mutable
 
-class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends RichFlatMapFunction[(MetricsEvent, Int), Event] {
+class PartialMetricsProcessor(streamHeader: StreamHeader, extMin: Int) extends RichFlatMapFunction[(MetricsEvent, Int), Event] {
 
   val attrNum: Int = streamHeader.attrNum()
   val clsNum: Int = streamHeader.clsNum()
@@ -20,9 +20,9 @@ class PartialRulesProcessor(streamHeader: StreamHeader, extMin: Int) extends Ric
     val event = eventWithId._1
 
     event match {
-      case e: NewRuleMetricsEvent => rulesStats.put(e.ruleId, new RuleMetrics(attrNum, clsNum))
+      case e: NewMetricsEvent => rulesStats.put(e.ruleId, new RuleMetrics(attrNum, clsNum))
 
-      case e: RuleMetricsUpdateEvent =>
+      case e: MetricsUpdateEvent =>
         val ruleId = e.ruleId
 
         if (!rulesStats.contains(ruleId)) {
