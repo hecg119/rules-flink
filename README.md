@@ -1,12 +1,20 @@
-# rules-flink
+# Adaptive decision rules
 
-Build: 
+Distributed decision rules for data streams, implemented using Apache Flink.
 
-- change mainClass in _pom.xml_ to HorizontalRulesJob or VerticalRulesJob
+### Install:
+* Scala 2.11.12
+* Flink 1.6.1
+* Maven
+* Dependencies given in *pom.xml*
 
-- then: `mvn clean package`
+### Build: 
 
-Run: 
+* Change `mainClass` in _pom.xml_ to `HorizontalRulesJob` or `VerticalRulesJob`
+
+* Then: `mvn clean package`
+
+### Run: 
 
 `java -jar horizontal.jar data/ELEC.arff 8 100` 
 
